@@ -60,6 +60,8 @@ commonLabels:
      #     cpu: 500m
         #  cpu: 100m
      #     cpu: 500m
+        #  cpu: 100m
+     #     cpu: 500m
 patches:
 - patch: |-
     - op: replace
@@ -94,6 +96,9 @@ patches:
     kind: Deployment
     name: auth-service
 images:
+- name: ghcr.io/singhgauravlinux-coder/bakery-android/auth-service
+  newName: ghcr.io/singhgauravlinux-coder/bakery-android/auth-service
+  newTag: 9dd67f8
 - name: ghcr.io/singhgauravlinux-coder/bakery-android/baking-schedule-service
   newName: ghcr.io/singhgauravlinux-coder/bakery-android/baking-schedule-service
   newTag: 9dd67f8
