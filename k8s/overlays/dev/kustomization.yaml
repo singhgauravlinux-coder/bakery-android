@@ -111,6 +111,7 @@ commonLabels:
 
 
 
+
 patches:
 - path: patch-ingress-host.yaml
   target:
@@ -169,6 +170,9 @@ patches:
     kind: Deployment
     name: auth-service
 images:
+- name: ghcr.io/singhgauravlinux-coder/bakery-android/api-gateway
+  newName: ghcr.io/singhgauravlinux-coder/bakery-android/api-gateway
+  newTag: 9dd67f8
 - name: ghcr.io/singhgauravlinux-coder/bakery-android/auth-service
   newName: ghcr.io/singhgauravlinux-coder/bakery-android/auth-service
   newTag: 9dd67f8
