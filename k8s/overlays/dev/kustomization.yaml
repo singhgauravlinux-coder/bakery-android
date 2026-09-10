@@ -94,6 +94,7 @@ commonLabels:
 
 
 
+
 patches:
 - path: patch-ingress-host.yaml
   target:
@@ -154,4 +155,7 @@ patches:
 images:
 - name: ghcr.io/singhgauravlinux-coder/bakery-android/consent-service
   newName: ghcr.io/singhgauravlinux-coder/bakery-android/consent-service
+  newTag: 9dd67f8
+- name: ghcr.io/singhgauravlinux-coder/bakery-android/pricing-service
+  newName: ghcr.io/singhgauravlinux-coder/bakery-android/pricing-service
   newTag: 9dd67f8
