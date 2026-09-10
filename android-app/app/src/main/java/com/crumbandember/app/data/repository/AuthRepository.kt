@@ -8,14 +8,13 @@ import com.crumbandember.app.data.model.RegisterRequest
 import com.crumbandember.app.util.Resource
 import com.crumbandember.app.util.safeApiCall
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 class AuthRepository(
     private val api: ApiService,
     private val tokenManager: TokenManager
 ) {
-    val isLoggedIn: Flow<Boolean> = tokenManager.accessTokenFlow.let { flow ->
-        kotlinx.coroutines.flow.map(flow) { it != null }
-    }
+    val isLoggedIn: Flow<Boolean> = tokenManager.accessTokenFlow.map { it != null }
     val userName: Flow<String?> = tokenManager.userNameFlow
 
     suspend fun login(email: String, password: String): Resource<Unit> {
