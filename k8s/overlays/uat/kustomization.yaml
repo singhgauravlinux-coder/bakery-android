@@ -93,6 +93,7 @@ commonLabels:
 
 
 
+
 patches:
 - path: patch-ingress-host.yaml
   target:
@@ -150,5 +151,7 @@ patches:
   target:
     kind: Deployment
     name: auth-service
-
-images: []
+images:
+- name: ghcr.io/singhgauravlinux-coder/bakery-android/consent-service
+  newName: ghcr.io/singhgauravlinux-coder/bakery-android/consent-service
+  newTag: 9dd67f8
