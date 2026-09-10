@@ -26,6 +26,8 @@ commonLabels:
 # throughput should scale independently of the API, and SKIP LOCKED claiming
 # makes extra replicas safe, so it is set explicitly here (this patch is
 # listed after the blanket one, so it wins).
+        #  cpu: 100m
+     #     cpu: 500m
 patches:
 - patch: |-
     - op: replace
@@ -59,4 +61,7 @@ patches:
   target:
     kind: Deployment
     name: auth-service
-images: []
+images:
+- name: ghcr.io/singhgauravlinux-coder/bakery-android/consent-service
+  newName: ghcr.io/singhgauravlinux-coder/bakery-android/consent-service
+  newTag: 9dd67f8
