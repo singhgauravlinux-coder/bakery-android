@@ -1,0 +1,20 @@
+{
+  "name": "consent-service",
+  "description": "Records customer consent decisions (starting with location access) and their current status",
+  "version": "1.0.0",
+  "private": true,
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test test/*.test.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "pino": "^9.3.2",
+    "pino-http": "^10.3.0",
+    "pg": "^8.12.0"
+  }
+}

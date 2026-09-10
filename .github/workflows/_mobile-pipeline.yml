@@ -1,0 +1,210 @@
+name: Mobile pipeline (reusable)
+
+# ---------------------------------------------------------------------------
+# Same shape as _service-pipeline.yml, adapted for a mobile client instead of
+# a container image:
+#
+#   backend service:  build image -> push to GHCR -> bump tag in an overlay
+#   android app:       build APK  -> attach to a GitHub Release  -> gated
+#                       the same way, by the same dev/uat/production
+#                       GitHub Environments the backend already uses
+#
+# ArgoCD is a Kubernetes reconciler — it has no cluster resource to sync an
+# APK into, so it is deliberately NOT part of this workflow. What IS shared
+# with the backend's CD story is the *promotion policy*: dev ships on every
+# commit with no human in the loop, uat requires the "uat" Environment's
+# reviewers, production requires the "production" Environment's reviewers
+# AND is the last, deliberate step — exactly matching bakery-uat/bakery-
+# production's sync policy in argocd/*.yaml. That's what "seamless" means
+# here: a QA engineer approving a uat promotion is approving both the
+# backend image (via bump-uat) and the mobile build (via this workflow) into
+# a state that is guaranteed to be able to talk to each other, because both
+# point at uat.bakery.local.
+#
+# Each flavor's API_BASE_URL (app/build.gradle.kts productFlavors) already
+# matches the ingress host that environment's Argo CD Application serves
+# (see k8s/overlays/<env>/patch-ingress-host.yaml), so there is no separate
+# "which backend does this build talk to" configuration step to keep in
+# sync by hand.
+# ---------------------------------------------------------------------------
+
+on:
+  workflow_call:
+    inputs:
+      run_release_signing:
+        description: "Attempt to sign uat/production builds with the org's real key (requires secrets)"
+        required: false
+        type: boolean
+        default: true
+
+jobs:
+  # ---------------------------------------------------------- build + test
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: android-app
+    outputs:
+      short_sha: ${{ steps.sha.outputs.short_sha }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Short SHA
+        id: sha
+        run: echo "short_sha=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Unit tests (dev flavor — fastest feedback, same one every PR runs)
+        run: ./gradlew testDevDebugUnitTest --stacktrace
+
+      - name: Lint (dev flavor)
+        run: ./gradlew lintDevDebug --stacktrace
+
+      - name: Assemble dev debug APK
+        run: ./gradlew assembleDevDebug --stacktrace
+
+      - name: Upload dev APK (build artifact — every push/PR, no gate)
+        uses: actions/upload-artifact@v4
+        with:
+          name: crumb-and-ember-dev-${{ steps.sha.outputs.short_sha }}
+          path: android-app/app/build/outputs/apk/dev/debug/*.apk
+          retention-days: 14
+
+  # ------------------------------------------------------------ promote: uat
+  promote-uat:
+    needs: build
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment:
+      name: uat
+    # Same shared, ordered queue pattern as the backend's bump-uat job, so a
+    # mobile promotion and a service promotion racing for the "uat" gate
+    # resolve in arrival order instead of colliding.
+    concurrency:
+      group: mobile-promote-uat
+      cancel-in-progress: false
+      queue: max
+    defaults:
+      run:
+        working-directory: android-app
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Decode signing key (if configured)
+        if: inputs.run_release_signing && vars.ANDROID_KEYSTORE_BASE64 != ''
+        env:
+          KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$KEYSTORE_B64" ]; then
+            echo "$KEYSTORE_B64" | base64 -d > release.keystore
+            echo "ANDROID_KEYSTORE_PATH=$(pwd)/release.keystore" >> "$GITHUB_ENV"
+          fi
+
+      - name: Assemble uat release APK
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: ./gradlew assembleUatRelease --stacktrace
+
+      - name: Publish uat build (versioned artifact — the mobile equivalent of pinning an image tag)
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: mobile-uat-${{ needs.build.outputs.short_sha }}
+          name: "Mobile · uat · ${{ needs.build.outputs.short_sha }}"
+          prerelease: true
+          files: android-app/app/build/outputs/apk/uat/release/*.apk
+          body: |
+            Points at `uat.bakery.local` — matches whatever the `bakery-uat`
+            Argo CD Application currently has synced. Built from
+            `${{ github.sha }}`.
+
+  # ----------------------------------------------------- promote: production
+  promote-production:
+    needs: [build, promote-uat]
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment:
+      name: production
+    # Deliberately no `if: github.ref == ...` shortcut and no auto-anything
+    # beyond what the "production" Environment's required reviewers already
+    # gate — same posture as argocd/production-app.yaml having no
+    # `automated:` block: a human approves this Environment, then a second
+    # human still has to `argocd app sync bakery-production` before the
+    # backend those signed-in users are about to hit actually changes.
+    concurrency:
+      group: mobile-promote-production
+      cancel-in-progress: false
+      queue: max
+    defaults:
+      run:
+        working-directory: android-app
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Decode signing key (if configured)
+        if: inputs.run_release_signing && vars.ANDROID_KEYSTORE_BASE64 != ''
+        env:
+          KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$KEYSTORE_B64" ]; then
+            echo "$KEYSTORE_B64" | base64 -d > release.keystore
+            echo "ANDROID_KEYSTORE_PATH=$(pwd)/release.keystore" >> "$GITHUB_ENV"
+          fi
+
+      - name: Assemble production release app bundle
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: ./gradlew bundleProductionRelease --stacktrace
+
+      - name: Publish production build
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: mobile-production-${{ needs.build.outputs.short_sha }}
+          name: "Mobile · production · ${{ needs.build.outputs.short_sha }}"
+          files: android-app/app/build/outputs/bundle/productionRelease/*.aab
+          body: |
+            Points at `bakery.local` (production). Built from
+            `${{ github.sha }}`.
+
+            To ship to real users from here: add a Play Console service
+            account and a `r0adkll/upload-google-play` (or Fastlane
+            `supply`) step after this one, feeding it the .aab above.

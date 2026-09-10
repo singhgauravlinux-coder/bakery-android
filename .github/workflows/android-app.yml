@@ -1,0 +1,28 @@
+name: android-app
+
+# Independent pipeline for the mobile client only. Triggers when its own
+# code or the shared mobile pipeline definition changes — never when a
+# backend service changes (and vice versa: services/** changes never
+# trigger this).
+on:
+  push:
+    branches: [main]
+    paths:
+      - "android-app/**"
+      - ".github/workflows/android-app.yml"
+      - ".github/workflows/_mobile-pipeline.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "android-app/**"
+  workflow_dispatch:
+
+# contents:write is needed to publish GitHub Releases (mobile's equivalent
+# of the backend's "commit the bumped tag" step).
+permissions:
+  contents: write
+
+jobs:
+  pipeline:
+    uses: ./.github/workflows/_mobile-pipeline.yml
+    secrets: inherit

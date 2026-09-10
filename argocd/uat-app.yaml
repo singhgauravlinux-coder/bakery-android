@@ -1,0 +1,36 @@
+# Register with: kubectl apply -f argocd/uat-app.yaml --namespace argocd
+#
+# Mobile parity: the Android app's "uat" build flavor (android-app/app/
+# build.gradle.kts) is hardcoded to uat.bakery.local, the exact host this
+# Application's Ingress serves (see k8s/overlays/uat/patch-ingress-host.
+# yaml). Its own promotion to a "uat" GitHub Release goes through the same
+# "uat" GitHub Environment reviewers as this overlay's bump-uat commit
+# (.github/workflows/_mobile-pipeline.yml) — so the person approving a
+# backend promotion here and the person approving a mobile promotion are
+# gated by the same review policy, even though Argo CD itself only ever
+# reconciles the backend half.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: bakery-uat
+  namespace: argocd
+  labels:
+    app.kubernetes.io/part-of: crumb-and-ember
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/singhgauravlinux-coder/bakery-android.git
+    targetRevision: main
+    path: k8s/overlays/uat
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: bakery-uat
+  syncPolicy:
+    # The promotion gate for uat already happened in GitHub (the bump-uat
+    # job sits behind the "uat" Environment's required reviewers), so it's
+    # safe for Argo to auto-apply once that commit lands.
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
