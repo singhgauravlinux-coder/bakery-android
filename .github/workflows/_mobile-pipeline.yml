@@ -195,15 +195,40 @@ jobs:
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: ./gradlew bundleProductionRelease --stacktrace
 
+      # The .aab above is what Play Store ingests, but it can't be sideloaded
+      # or installed directly on a device for manual testing. Also assemble
+      # the production APK so there's something installable to verify a
+      # prod build against bakery.microsvc.store before it ever reaches
+      # Play Console.
+      - name: Assemble production release APK (for manual/sideload testing)
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: ./gradlew assembleProductionRelease --stacktrace
+
+      - name: Upload production APK (build artifact — for testing pre-Play Store)
+        uses: actions/upload-artifact@v4
+        with:
+          name: crumb-and-ember-production-${{ needs.build.outputs.short_sha }}
+          path: android-app/app/build/outputs/apk/production/release/*.apk
+          retention-days: 14
+
       - name: Publish production build
         uses: softprops/action-gh-release@v2
         with:
           tag_name: mobile-production-${{ needs.build.outputs.short_sha }}
           name: "Mobile · production · ${{ needs.build.outputs.short_sha }}"
-          files: android-app/app/build/outputs/bundle/productionRelease/*.aab
+          files: |
+            android-app/app/build/outputs/bundle/productionRelease/*.aab
+            android-app/app/build/outputs/apk/production/release/*.apk
           body: |
-            Points at `bakery.local` (production). Built from
+            Points at `bakery.microsvc.store` (production). Built from
             `${{ github.sha }}`.
+
+            - `.aab` — upload this to Play Console when you're ready to ship.
+            - `.apk` — sideload this to test the production build on a
+              device/emulator before it goes to Play Store.
 
             To ship to real users from here: add a Play Console service
             account and a `r0adkll/upload-google-play` (or Fastlane
