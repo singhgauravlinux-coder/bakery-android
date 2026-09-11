@@ -9,6 +9,7 @@ const PORT = Number(process.env.PORT || 3000);
 
 // All logs are structured JSON on stdout (12-factor), ready for
 // Fluent Bit / Loki / ELK collection from the container runtime.
+// logging for logs collector.
 const logger = pino({
   level: process.env.LOG_LEVEL || 'info',
   timestamp: pino.stdTimeFunctions.isoTime,
