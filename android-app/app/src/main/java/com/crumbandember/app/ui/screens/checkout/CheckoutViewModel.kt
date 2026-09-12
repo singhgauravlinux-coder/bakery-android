@@ -26,7 +26,7 @@ class CheckoutViewModel(
     /**
      * order-service requires paymentMethod in {card, upi, cod, razorpay} and a
      * positive `amount` for anything except cod. Payment gateway integration
-     * (Razorpay order + signature verify) lives behind /api/payments/razorpay/*
+     * (Razorpay order + signature verify) lives behind /api/payments/razorpay/ routes
      * and is a good next step once this basic flow is wired up.
      */
     fun placeOrder(paymentMethod: String, pickupTime: String?) {

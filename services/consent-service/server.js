@@ -16,6 +16,7 @@ const DATABASE_URL = process.env.DATABASE_URL || '';
 // ("locaton") silently creates a new, never-checked consent type instead
 // of failing loudly. Add a new value here when the product adds a new
 // consent prompt (e.g. "notifications", "analytics").
+// for location extract.
 const CONSENT_TYPES = new Set(['location']);
 
 const logger = pino({

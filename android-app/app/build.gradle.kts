@@ -83,7 +83,7 @@ android {
         create("production") {
             dimension = "environment"
             // No suffix: this is the one that ships to real users / the store.
-            buildConfigField("String", "API_BASE_URL", "\"https://bakery.local/api/\"")
+            buildConfigField("String", "API_BASE_URL", "\"https://bakery.microsvc.store/api/\"")
             buildConfigField("String", "ENVIRONMENT", "\"production\"")
         }
     }
@@ -103,6 +103,7 @@ android {
     }
     kotlinOptions {
         jvmTarget = "17"
+        freeCompilerArgs += listOf("-opt-in=androidx.compose.material3.ExperimentalMaterial3Api")
     }
 
     packaging {

@@ -24,19 +24,37 @@ import java.util.concurrent.TimeUnit
  */
 object NetworkModule {
 
+    // Matched against Request.url.encodedPath with the leading "/" trimmed
+    // (baseUrl's "/api/" prefix means these show up as "api/auth/register" etc).
+    private val NO_AUTH_HEADER_PATHS = setOf(
+        "api/auth/register",
+        "api/auth/login",
+        "api/auth/refresh"
+    )
+
     fun create(tokenManager: TokenManager, onSessionExpired: () -> Unit): ApiService {
         val logging = HttpLoggingInterceptor().apply {
             level = if (BuildConfig.DEBUG) HttpLoggingInterceptor.Level.BODY else HttpLoggingInterceptor.Level.NONE
         }
 
         val authInterceptor = okhttp3.Interceptor { chain ->
-            val token = runBlocking { tokenManager.accessToken() }
-            val request = if (token != null) {
-                chain.request().newBuilder()
-                    .addHeader("Authorization", "Bearer $token")
-                    .build()
+            val original = chain.request()
+            val path = original.url.encodedPath.trimStart('/')
+            // These endpoints are unauthenticated by design — no session
+            // exists yet (register/login) or the one we have is exactly what
+            // we're trying to replace (refresh). Attaching a stale, expired,
+            // or malformed bearer token to them serves no purpose and risks
+            // the request being mangled or rejected before it ever reaches
+            // auth-service's own validation.
+            val request = if (path in NO_AUTH_HEADER_PATHS) {
+                original
             } else {
-                chain.request()
+                val token = runBlocking { tokenManager.accessToken() }
+                if (token != null) {
+                    original.newBuilder().addHeader("Authorization", "Bearer $token").build()
+                } else {
+                    original
+                }
             }
             chain.proceed(request)
         }
