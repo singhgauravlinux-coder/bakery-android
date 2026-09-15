@@ -28,10 +28,15 @@ class AuthRepository(
     }
 
     suspend fun register(email: String, password: String, name: String?): Resource<Unit> {
-        val result = safeApiCall { api.register(RegisterRequest(email, password, name)) }
+        val body = RegisterRequest(email, password, name)
+        val result = safeApiCall { api.register(body) }
         return when (result) {
             is Resource.Success -> Resource.Success(Unit)
-            is Resource.Error -> Resource.Error(result.message, result.kind)
+            is Resource.Error -> Resource.Error(
+                result.message,
+                result.kind,
+                debugDetail = "sent: ${com.google.gson.Gson().toJson(body)}\n${result.debugDetail ?: ""}"
+            )
             else -> Resource.Error("Registration failed")
         }
     }
