@@ -42,7 +42,15 @@ sealed class Resource<out T> {
     object Idle : Resource<Nothing>()
     object Loading : Resource<Nothing>()
     data class Success<T>(val data: T) : Resource<T>()
-    data class Error(val message: String, val kind: ErrorKind = ErrorKind.UNKNOWN) : Resource<Nothing>()
+    data class Error(
+        val message: String,
+        val kind: ErrorKind = ErrorKind.UNKNOWN,
+        // Raw request/response text for on-device troubleshooting when adb
+        // isn't available — never shown unless the screen explicitly asks
+        // for it (see RegisterScreen's "View details" button). Temporary:
+        // remove once the register 400 investigation is closed out.
+        val debugDetail: String? = null
+    ) : Resource<Nothing>()
 }
 
 /**
@@ -77,7 +85,11 @@ suspend fun <T> safeApiCall(call: suspend () -> retrofit2.Response<T>): Resource
                 404 -> ErrorKind.NOT_FOUND
                 else -> ErrorKind.UNKNOWN
             }
-            Resource.Error(serverMessage ?: "Request failed (${response.code()})", kind)
+            Resource.Error(
+                serverMessage ?: "Request failed (${response.code()})",
+                kind,
+                debugDetail = "HTTP ${response.code()}\nbody: ${raw ?: "(empty)"}"
+            )
         }
     } catch (e: UnknownHostException) {
         // DNS/host resolution failed. Could be no network, could be a bad

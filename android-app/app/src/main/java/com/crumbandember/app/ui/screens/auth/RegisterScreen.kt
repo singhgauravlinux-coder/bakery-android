@@ -2,6 +2,7 @@ package com.crumbandember.app.ui.screens.auth
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -27,6 +28,9 @@ fun RegisterScreen(
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    // TEMP: on-device diagnostics for the register-400 investigation. Remove
+    // this along with Resource.Error.debugDetail once that's closed out.
+    var showDetails by remember { mutableStateOf(false) }
 
     LaunchedEffect(registerState) {
         if (registerState is Resource.Success) onRegisterSuccess()
@@ -71,12 +75,34 @@ fun RegisterScreen(
         Spacer(Modifier.height(20.dp))
 
         if (registerState is Resource.Error) {
+            val error = registerState as Resource.Error
             Text(
-                friendlyInlineMessage((registerState as Resource.Error).kind, (registerState as Resource.Error).message),
+                friendlyInlineMessage(error.kind, error.message),
                 color = MaterialTheme.colorScheme.error,
                 style = MaterialTheme.typography.bodyMedium
             )
+            if (error.debugDetail != null) {
+                TextButton(onClick = { showDetails = true }) {
+                    Text("View details")
+                }
+            }
             Spacer(Modifier.height(12.dp))
+        }
+
+        if (showDetails && registerState is Resource.Error) {
+            val detail = (registerState as Resource.Error).debugDetail.orEmpty()
+            AlertDialog(
+                onDismissRequest = { showDetails = false },
+                confirmButton = {
+                    TextButton(onClick = { showDetails = false }) { Text("Close") }
+                },
+                title = { Text("Request details") },
+                text = {
+                    SelectionContainer {
+                        Text(detail, style = MaterialTheme.typography.bodySmall)
+                    }
+                }
+            )
         }
 
         Button(
