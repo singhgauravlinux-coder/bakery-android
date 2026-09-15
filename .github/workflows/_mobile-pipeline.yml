@@ -73,6 +73,17 @@ jobs:
       - name: Assemble dev debug APK
         run: ./gradlew assembleDevDebug --stacktrace
 
+      # Everything above this line runs unminified, which is exactly how a
+      # release APK once shipped posting R8-renamed JSON keys ({"a":..,"b":..})
+      # to /auth/register and taking a 400 on every sign-up. Run R8 on every
+      # push and assert the wire models came out the other side intact, so the
+      # failure surfaces in CI instead of on a tester's device.
+      - name: Assemble production release APK (minified — R8 smoke test)
+        run: ./gradlew assembleProductionRelease --stacktrace
+
+      - name: Verify wire contract survives minification
+        run: scripts/verify-minified-wire-contract.sh productionRelease
+
       - name: Upload dev APK (build artifact — every push/PR, no gate)
         uses: actions/upload-artifact@v4
         with:
@@ -129,6 +140,9 @@ jobs:
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: ./gradlew assembleUatRelease --stacktrace
+
+      - name: Verify wire contract survives minification
+        run: scripts/verify-minified-wire-contract.sh uatRelease
 
       - name: Publish uat build (versioned artifact — the mobile equivalent of pinning an image tag)
         uses: softprops/action-gh-release@v2
@@ -206,6 +220,12 @@ jobs:
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: ./gradlew assembleProductionRelease --stacktrace
+
+      # Last gate before a human downloads this APK and installs it on a real
+      # phone. If R8 renamed a wire model, stop here rather than publish a
+      # build where every sign-in returns 400.
+      - name: Verify wire contract survives minification
+        run: scripts/verify-minified-wire-contract.sh productionRelease
 
       - name: Upload production APK (build artifact — for testing pre-Play Store)
         uses: actions/upload-artifact@v4
