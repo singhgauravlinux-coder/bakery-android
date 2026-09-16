@@ -41,6 +41,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.lerp
 import com.crumbandember.app.ui.theme.BakeryTokens
 import kotlinx.coroutines.delay
@@ -173,7 +174,7 @@ fun Hero3DCard(
                 style = MaterialTheme.typography.labelSmall,
                 color = Color.White.copy(alpha = 0.75f),
                 fontWeight = FontWeight.Bold,
-                letterSpacing = androidx.compose.ui.unit.sp(1.5f)
+                letterSpacing = 1.5f.sp
             )
             FavoriteButton(
                 favorited = favorited,
@@ -197,7 +198,7 @@ fun Hero3DCard(
                 style = MaterialTheme.typography.titleLarge,
                 color = Color.White,
                 fontWeight = FontWeight.Bold,
-                lineHeight = androidx.compose.ui.unit.sp(26)
+                lineHeight = 26.sp
             )
             Spacer(Modifier.height(4.dp))
             Text(
