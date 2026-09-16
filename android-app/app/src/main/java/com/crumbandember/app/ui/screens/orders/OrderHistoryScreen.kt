@@ -73,6 +73,7 @@ fun OrderHistoryScreen(
                 onSelect = { tab ->
                     when (tab) {
                         BakeryTab.HOME -> onHomeClick()
+                        BakeryTab.SEARCH -> onHomeClick()
                         BakeryTab.ORDERS -> {}
                         BakeryTab.CART -> onCartClick()
                         BakeryTab.PROFILE -> onProfileClick()
