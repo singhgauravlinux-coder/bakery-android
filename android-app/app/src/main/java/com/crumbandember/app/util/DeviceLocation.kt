@@ -1,6 +1,7 @@
 package com.crumbandember.app.util
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Geocoder
@@ -19,6 +20,9 @@ import java.util.Locale
  */
 object DeviceLocation {
 
+    @SuppressLint("MissingPermission") // Guarded by hasLocationPermission(context) below —
+    // lint can't trace that check across the mapNotNull/runCatching lambdas into
+    // getLastKnownLocation(), so it flags a call that's already permission-safe.
     suspend fun currentCityState(context: Context): String? = withContext(Dispatchers.IO) {
         if (!hasLocationPermission(context)) return@withContext null
 
