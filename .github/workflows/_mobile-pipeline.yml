@@ -85,7 +85,7 @@ jobs:
         run: ./gradlew assembleProductionRelease --stacktrace
 
       - name: Verify wire contract survives minification
-        run: scripts/verify-minified-wire-contract.sh productionRelease
+        run: bash scripts/verify-minified-wire-contract.sh productionRelease
 
       - name: Upload dev APK (build artifact — every push/PR, no gate)
         uses: actions/upload-artifact@v4
@@ -148,7 +148,7 @@ jobs:
         run: ./gradlew assembleUatRelease --stacktrace
 
       - name: Verify wire contract survives minification
-        run: scripts/verify-minified-wire-contract.sh uatRelease
+        run: bash scripts/verify-minified-wire-contract.sh uatRelease
 
       - name: Publish uat build (versioned artifact — the mobile equivalent of pinning an image tag)
         uses: softprops/action-gh-release@v2
@@ -234,7 +234,7 @@ jobs:
       # phone. If R8 renamed a wire model, stop here rather than publish a
       # build where every sign-in returns 400.
       - name: Verify wire contract survives minification
-        run: scripts/verify-minified-wire-contract.sh productionRelease
+        run: bash scripts/verify-minified-wire-contract.sh productionRelease
 
       - name: Upload production APK (build artifact — for testing pre-Play Store)
         uses: actions/upload-artifact@v4
