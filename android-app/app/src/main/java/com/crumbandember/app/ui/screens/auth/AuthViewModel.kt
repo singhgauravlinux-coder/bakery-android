@@ -16,6 +16,9 @@ class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
     private val _registerState = MutableStateFlow<Resource<Unit>>(Resource.Idle)
     val registerState: StateFlow<Resource<Unit>> = _registerState
 
+    private val _forgotPasswordState = MutableStateFlow<Resource<String>>(Resource.Idle)
+    val forgotPasswordState: StateFlow<Resource<String>> = _forgotPasswordState
+
     fun login(email: String, password: String) {
         if (email.isBlank() || password.isBlank()) {
             _loginState.value = Resource.Error("Enter your email and password")
@@ -40,5 +43,16 @@ class AuthViewModel(private val repository: AuthRepository) : ViewModel() {
 
     fun resetRegisterState() {
         _registerState.value = Resource.Idle
+    }
+
+    fun forgotPassword(email: String) {
+        if (email.isBlank()) {
+            _forgotPasswordState.value = Resource.Error("Enter the email you signed up with")
+            return
+        }
+        viewModelScope.launch {
+            _forgotPasswordState.value = Resource.Loading
+            _forgotPasswordState.value = repository.forgotPassword(email.trim())
+        }
     }
 }

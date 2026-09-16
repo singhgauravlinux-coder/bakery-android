@@ -3,6 +3,7 @@ package com.crumbandember.app.ui.navigation
 sealed class Screen(val route: String) {
     object Login : Screen("login")
     object Register : Screen("register")
+    object ForgotPassword : Screen("forgot-password")
     object Catalog : Screen("catalog")
     object ProductDetail : Screen("product/{productId}") {
         fun createRoute(productId: String) = "product/$productId"

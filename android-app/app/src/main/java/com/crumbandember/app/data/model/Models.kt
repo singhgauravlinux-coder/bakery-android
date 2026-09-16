@@ -97,3 +97,47 @@ data class ConsentRecord(
 // --- generic gateway error envelope --------------------------------------
 
 data class ApiError(val error: String?, val reason: String? = null, val traceId: String? = null)
+
+// --- auth-service: forgot/reset password ---------------------------------
+
+data class ForgotPasswordRequest(val email: String)
+
+data class ForgotPasswordResponse(val message: String)
+
+data class ResetPasswordRequest(val token: String, val newPassword: String)
+
+data class ResetPasswordResponse(val ok: Boolean)
+
+// --- order-service: confirm / status transition ---------------------------
+
+data class ConfirmOrderRequest(val paymentId: String)
+
+data class UpdateOrderStatusRequest(val status: String)
+
+// --- payment-service: POST /payments (mock provider) ----------------------
+// Card/UPI require real-looking instrument details — see payment-service's
+// validateCard/validateUpi. COD needs none of these fields.
+
+data class CreatePaymentRequest(
+    val orderId: String,
+    val amount: Double,
+    val method: String, // "card" | "upi" | "cod"
+    val currency: String = "INR",
+    val cardNumber: String? = null,
+    val expiry: String? = null,
+    val cvv: String? = null,
+    val vpa: String? = null
+)
+
+data class Payment(
+    val id: String,
+    val provider: String,
+    val orderId: String,
+    val amount: Double,
+    val currency: String,
+    val method: String?,
+    val status: String, // "succeeded" | "rejected" | "pending" | ...
+    val instrumentSummary: String?,
+    val createdAt: String? = null,
+    val updatedAt: String? = null
+)

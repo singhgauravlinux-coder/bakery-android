@@ -14,11 +14,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.crumbandember.app.data.model.Product
 import com.crumbandember.app.data.repository.ProductRepository
 import com.crumbandember.app.ui.components.*
+import com.crumbandember.app.util.DeviceLocation
 import com.crumbandember.app.util.Resource
 import com.crumbandember.app.util.ViewModelFactory
 
@@ -120,13 +122,19 @@ private fun CatalogContent(
         if (selectedCategory == null) products else products.filter { it.category?.trim() == selectedCategory }
     }
 
+    val context = LocalContext.current
+    var locationLabel by remember { mutableStateOf<String?>("Locating…") }
+    LaunchedEffect(Unit) {
+        locationLabel = DeviceLocation.currentCityState(context) ?: "Location unavailable"
+    }
+
     LazyColumnWithGrid(padding = padding) {
         item {
             Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 12.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Filled.LocationOn, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
                     Spacer(Modifier.width(4.dp))
-                    Text("Bangalore, Karnataka", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(locationLabel ?: "Location unavailable", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 Spacer(Modifier.height(6.dp))
                 Text(
