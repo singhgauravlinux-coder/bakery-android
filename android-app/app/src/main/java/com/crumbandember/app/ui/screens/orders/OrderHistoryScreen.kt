@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Replay
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -32,10 +33,38 @@ fun OrderHistoryScreen(
 ) {
     val viewModel: OrdersViewModel = viewModel(factory = ViewModelFactory { OrdersViewModel(orderRepository) })
     val state by viewModel.orders.collectAsState()
+    val cancelError by viewModel.cancelError.collectAsState()
+    var orderPendingCancel by remember { mutableStateOf<Order?>(null) }
+    val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(Unit) { viewModel.loadOrders() }
 
+    LaunchedEffect(cancelError) {
+        cancelError?.let {
+            snackbarHostState.showSnackbar(friendlyInlineMessage(com.crumbandember.app.util.ErrorKind.UNKNOWN, it))
+            viewModel.clearCancelError()
+        }
+    }
+
+    if (orderPendingCancel != null) {
+        AlertDialog(
+            onDismissRequest = { orderPendingCancel = null },
+            title = { Text("Cancel this order?") },
+            text = { Text("Order #${orderPendingCancel!!.id.take(8)} will be cancelled. This can't be undone.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.cancelOrder(orderPendingCancel!!.id)
+                    orderPendingCancel = null
+                }) { Text("Cancel Order", color = MaterialTheme.colorScheme.error) }
+            },
+            dismissButton = {
+                TextButton(onClick = { orderPendingCancel = null }) { Text("Keep Order") }
+            }
+        )
+    }
+
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = { BakeryDetailTopBar(title = "My Orders", onBack = onBack) },
         bottomBar = {
             BakeryBottomBar(
@@ -71,7 +100,11 @@ fun OrderHistoryScreen(
                         verticalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
                         items(s.data, key = { it.id }) { order ->
-                            OrderCard(order = order, onClick = { onOrderClick(order.id) })
+                            OrderCard(
+                                order = order,
+                                onClick = { onOrderClick(order.id) },
+                                onCancel = { orderPendingCancel = order }
+                            )
                         }
                     }
                 }
@@ -81,7 +114,8 @@ fun OrderHistoryScreen(
 }
 
 @Composable
-private fun OrderCard(order: Order, onClick: () -> Unit) {
+private fun OrderCard(order: Order, onClick: () -> Unit, onCancel: () -> Unit) {
+    val canCancel = order.status.equals("pending_payment", ignoreCase = true)
     Surface(
         shape = RoundedCornerShape(18.dp),
         color = MaterialTheme.colorScheme.surface,
@@ -95,7 +129,20 @@ private fun OrderCard(order: Order, onClick: () -> Unit) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text("Order #${order.id.take(8)}", style = MaterialTheme.typography.titleMedium)
-                StatusBadge(status = order.status)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    StatusBadge(status = order.status)
+                    if (canCancel) {
+                        Spacer(Modifier.width(4.dp))
+                        IconButton(onClick = onCancel, modifier = Modifier.size(32.dp)) {
+                            Icon(
+                                Icons.Filled.Close,
+                                contentDescription = "Cancel order",
+                                tint = MaterialTheme.colorScheme.error,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                    }
+                }
             }
             Spacer(Modifier.height(6.dp))
             order.createdAt?.let {
@@ -104,6 +151,14 @@ private fun OrderCard(order: Order, onClick: () -> Unit) {
             order.amount?.let {
                 Spacer(Modifier.height(4.dp))
                 Text(formatPrice(it), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+            }
+            if (canCancel) {
+                Spacer(Modifier.height(6.dp))
+                Text(
+                    "Payment not completed yet — tap ✕ to cancel this order.",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
             if (order.status.equals("delivered", ignoreCase = true) || order.status.equals("completed", ignoreCase = true)) {
                 Spacer(Modifier.height(10.dp))
@@ -120,13 +175,13 @@ private fun OrderCard(order: Order, onClick: () -> Unit) {
 @Composable
 private fun StatusBadge(status: String) {
     val color = when (status.lowercase()) {
-        "delivered", "completed" -> MaterialTheme.colorScheme.tertiary
+        "delivered", "completed", "received" -> MaterialTheme.colorScheme.tertiary
         "cancelled" -> MaterialTheme.colorScheme.error
         else -> MaterialTheme.colorScheme.primary
     }
     Surface(shape = RoundedCornerShape(50), color = color.copy(alpha = 0.15f)) {
         Text(
-            status.replaceFirstChar { it.uppercase() },
+            status.replace('_', ' ').replaceFirstChar { it.uppercase() },
             style = MaterialTheme.typography.labelSmall,
             color = color,
             fontWeight = FontWeight.Bold,

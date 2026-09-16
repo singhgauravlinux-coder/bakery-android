@@ -25,6 +25,13 @@ interface ApiService {
     @POST("auth/logout")
     suspend fun logout(@Body body: RefreshRequest): Response<Unit>
 
+    // --- auth-service: forgot / reset password ----------------------------
+    @POST("auth/forgot-password")
+    suspend fun forgotPassword(@Body body: ForgotPasswordRequest): Response<ForgotPasswordResponse>
+
+    @POST("auth/reset-password")
+    suspend fun resetPassword(@Body body: ResetPasswordRequest): Response<ResetPasswordResponse>
+
     // --- product-catalog-service ------------------------------------------
     @GET("products")
     suspend fun getProducts(@Query("category") category: String? = null): Response<List<Product>>
@@ -55,11 +62,27 @@ interface ApiService {
     @POST("orders")
     suspend fun createOrder(@Body body: CreateOrderRequest): Response<Order>
 
+    // Confirms a pending_payment order once payment-service has a verified,
+    // succeeded payment for it — order-service checks this server-side
+    // (POST /orders/:id/confirm), the client cannot mark its own order paid.
+    @POST("orders/{id}/confirm")
+    suspend fun confirmOrder(@Path("id") id: String, @Body body: ConfirmOrderRequest): Response<Order>
+
+    @PUT("orders/{id}/status")
+    suspend fun updateOrderStatus(@Path("id") id: String, @Body body: UpdateOrderStatusRequest): Response<Order>
+
     @GET("orders/{id}")
     suspend fun getOrder(@Path("id") id: String): Response<Order>
 
     @GET("orders")
     suspend fun getOrders(): Response<List<Order>>
+
+    // --- payment-service (mock provider — see validateCard/validateUpi) ----
+    @POST("payments")
+    suspend fun createPayment(@Body body: CreatePaymentRequest): Response<Payment>
+
+    @GET("payments/{id}")
+    suspend fun getPayment(@Path("id") id: String): Response<Payment>
 
     // --- search-service ------------------------------------------------------
     @GET("search")

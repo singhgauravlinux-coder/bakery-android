@@ -2,6 +2,7 @@ package com.crumbandember.app.data.repository
 
 import com.crumbandember.app.data.api.ApiService
 import com.crumbandember.app.data.local.TokenManager
+import com.crumbandember.app.data.model.ForgotPasswordRequest
 import com.crumbandember.app.data.model.LoginRequest
 import com.crumbandember.app.data.model.RefreshRequest
 import com.crumbandember.app.data.model.RegisterRequest
@@ -50,4 +51,16 @@ class AuthRepository(
     }
 
     suspend fun currentUserId(): String? = tokenManager.userId()
+
+    // The backend never reveals whether the email exists — same generic
+    // "if that email exists, a reset link was sent" message either way —
+    // so the UI should show that message as-is rather than branching on it.
+    suspend fun forgotPassword(email: String): Resource<String> {
+        val result = safeApiCall { api.forgotPassword(ForgotPasswordRequest(email)) }
+        return when (result) {
+            is Resource.Success -> Resource.Success(result.data.message)
+            is Resource.Error -> Resource.Error(result.message, result.kind)
+            else -> Resource.Error("Could not send reset email")
+        }
+    }
 }

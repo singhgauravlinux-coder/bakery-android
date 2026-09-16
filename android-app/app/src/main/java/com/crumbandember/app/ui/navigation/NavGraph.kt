@@ -15,6 +15,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.navigation.NavType
 import com.crumbandember.app.BakeryApplication
+import com.crumbandember.app.ui.screens.auth.ForgotPasswordScreen
 import com.crumbandember.app.ui.screens.auth.LoginScreen
 import com.crumbandember.app.ui.screens.auth.RegisterScreen
 import com.crumbandember.app.ui.screens.cart.CartScreen
@@ -70,7 +71,15 @@ fun BakeryNavGraph(app: BakeryApplication) {
                         }
                     }
                 },
-                onNavigateToRegister = { navController.navigate(Screen.Register.route) }
+                onNavigateToRegister = { navController.navigate(Screen.Register.route) },
+                onNavigateToForgotPassword = { navController.navigate(Screen.ForgotPassword.route) }
+            )
+        }
+
+        composable(Screen.ForgotPassword.route) {
+            ForgotPasswordScreen(
+                authRepository = app.authRepository,
+                onBack = { navController.popBackStack() }
             )
         }
 
@@ -153,6 +162,7 @@ fun BakeryNavGraph(app: BakeryApplication) {
                 cartRepository = app.cartRepository,
                 productRepository = app.productRepository,
                 orderRepository = app.orderRepository,
+                paymentRepository = app.paymentRepository,
                 onBack = { navController.popBackStack() },
                 onOrderPlaced = { orderId ->
                     cartCount = 0

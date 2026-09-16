@@ -34,7 +34,8 @@ import com.crumbandember.app.util.ViewModelFactory
 fun LoginScreen(
     authRepository: AuthRepository,
     onLoginSuccess: () -> Unit,
-    onNavigateToRegister: () -> Unit
+    onNavigateToRegister: () -> Unit,
+    onNavigateToForgotPassword: () -> Unit
 ) {
     val viewModel: AuthViewModel = viewModel(factory = ViewModelFactory { AuthViewModel(authRepository) })
     val loginState by viewModel.loginState.collectAsState()
@@ -123,7 +124,7 @@ fun LoginScreen(
                             Checkbox(checked = rememberMe, onCheckedChange = { rememberMe = it })
                             Text("Remember me", style = MaterialTheme.typography.bodySmall)
                         }
-                        TextButton(onClick = { /* handled by a future password-reset flow */ }) {
+                        TextButton(onClick = onNavigateToForgotPassword) {
                             Text("Forgot password?")
                         }
                     }
