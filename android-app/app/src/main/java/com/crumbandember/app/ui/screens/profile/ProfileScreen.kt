@@ -84,7 +84,7 @@ fun ProfileScreen(
                         .background(MaterialTheme.colorScheme.primaryContainer),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text((userName?.firstOrNull() ?: '🥐').toString().uppercase(), style = MaterialTheme.typography.titleLarge)
+                    Text((userName?.firstOrNull()?.toString() ?: "🥐").uppercase(), style = MaterialTheme.typography.titleLarge)
                 }
                 Spacer(Modifier.width(14.dp))
                 Column {
