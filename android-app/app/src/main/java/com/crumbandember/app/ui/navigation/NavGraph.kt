@@ -104,6 +104,7 @@ fun BakeryNavGraph(app: BakeryApplication) {
         }
 
         composable(Screen.Catalog.route) {
+            val userName by app.authRepository.userName.collectAsState(initial = null)
             CatalogScreen(
                 productRepository = app.productRepository,
                 cartCount = cartCount,
@@ -111,7 +112,9 @@ fun BakeryNavGraph(app: BakeryApplication) {
                     navController.navigate(Screen.ProductDetail.createRoute(productId))
                 },
                 onCartClick = { navController.navigate(Screen.Cart.route) },
-                onProfileClick = { navController.navigate(Screen.Profile.route) }
+                onProfileClick = { navController.navigate(Screen.Profile.route) },
+                onOrdersClick = { navController.navigate(Screen.Orders.route) },
+                userGreetingName = userName
             )
         }
 
@@ -180,7 +183,11 @@ fun BakeryNavGraph(app: BakeryApplication) {
             OrderHistoryScreen(
                 orderRepository = app.orderRepository,
                 onBack = { navController.popBackStack() },
-                onOrderClick = { orderId -> navController.navigate(Screen.OrderConfirmation.createRoute(orderId)) }
+                onOrderClick = { orderId -> navController.navigate(Screen.OrderConfirmation.createRoute(orderId)) },
+                cartCount = cartCount,
+                onHomeClick = { navController.navigate(Screen.Catalog.route) { popUpTo(Screen.Catalog.route) { inclusive = true } } },
+                onCartClick = { navController.navigate(Screen.Cart.route) },
+                onProfileClick = { navController.navigate(Screen.Profile.route) }
             )
         }
 
@@ -195,7 +202,10 @@ fun BakeryNavGraph(app: BakeryApplication) {
                     navController.navigate(Screen.Login.route) {
                         popUpTo(0)
                     }
-                }
+                },
+                cartCount = cartCount,
+                onHomeClick = { navController.navigate(Screen.Catalog.route) { popUpTo(Screen.Catalog.route) { inclusive = true } } },
+                onCartClick = { navController.navigate(Screen.Cart.route) }
             )
         }
     }

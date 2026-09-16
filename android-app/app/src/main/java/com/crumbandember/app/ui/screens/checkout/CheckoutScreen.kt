@@ -2,23 +2,38 @@ package com.crumbandember.app.ui.screens.checkout
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.CreditCard
+import androidx.compose.material.icons.filled.Payments
+import androidx.compose.material.icons.filled.QrCode
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.crumbandember.app.data.repository.CartRepository
 import com.crumbandember.app.data.repository.OrderRepository
 import com.crumbandember.app.data.repository.ProductRepository
+import com.crumbandember.app.ui.components.AnimatedButton
+import com.crumbandember.app.ui.components.BakeryDetailTopBar
 import com.crumbandember.app.ui.components.ErrorView
 import com.crumbandember.app.ui.components.friendlyInlineMessage
 import com.crumbandember.app.util.Resource
 import com.crumbandember.app.util.ViewModelFactory
 
-private val PAYMENT_METHODS = listOf("card" to "Card", "upi" to "UPI", "cod" to "Cash on pickup")
+private data class PaymentOption(val value: String, val label: String, val icon: androidx.compose.ui.graphics.vector.ImageVector)
+
+private val PAYMENT_METHODS = listOf(
+    PaymentOption("card", "Card", Icons.Filled.CreditCard),
+    PaymentOption("upi", "UPI", Icons.Filled.QrCode),
+    PaymentOption("cod", "Cash on pickup", Icons.Filled.Payments)
+)
 
 @Composable
 fun CheckoutScreen(
@@ -33,7 +48,7 @@ fun CheckoutScreen(
         factory = ViewModelFactory { CheckoutViewModel(userId, cartRepository, productRepository, orderRepository) }
     )
     val orderState by viewModel.orderState.collectAsState()
-    var selectedMethod by remember { mutableStateOf(PAYMENT_METHODS.first().first) }
+    var selectedMethod by remember { mutableStateOf(PAYMENT_METHODS.first().value) }
     var pickupTime by remember { mutableStateOf("") }
 
     LaunchedEffect(orderState) {
@@ -43,41 +58,43 @@ fun CheckoutScreen(
     }
 
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Checkout") },
-                navigationIcon = {
-                    IconButton(onClick = onBack) { Icon(Icons.Filled.ArrowBack, contentDescription = "Back") }
-                }
-            )
-        }
+        topBar = { BakeryDetailTopBar(title = "Checkout", onBack = onBack) }
     ) { padding ->
-        Column(modifier = Modifier.padding(padding).padding(24.dp).fillMaxSize()) {
-            Text("Payment method", style = MaterialTheme.typography.titleMedium)
-            Spacer(Modifier.height(8.dp))
-            PAYMENT_METHODS.forEach { (value, label) ->
-                Row(
+        Column(modifier = Modifier.padding(padding).padding(20.dp).fillMaxSize()) {
+            Text("Payment Method", style = MaterialTheme.typography.titleMedium)
+            Spacer(Modifier.height(10.dp))
+            PAYMENT_METHODS.forEach { option ->
+                val selected = selectedMethod == option.value
+                Surface(
+                    shape = RoundedCornerShape(16.dp),
+                    color = if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .selectable(
-                            selected = selectedMethod == value,
-                            onClick = { selectedMethod = value },
-                            role = Role.RadioButton
-                        )
-                        .padding(vertical = 8.dp)
+                        .padding(vertical = 5.dp)
+                        .selectable(selected = selected, onClick = { selectedMethod = option.value }, role = Role.RadioButton)
                 ) {
-                    RadioButton(selected = selectedMethod == value, onClick = { selectedMethod = value })
-                    Spacer(Modifier.width(8.dp))
-                    Text(label, modifier = Modifier.align(androidx.compose.ui.Alignment.CenterVertically))
+                    Row(
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(option.icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                        Spacer(Modifier.width(12.dp))
+                        Text(option.label, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
+                        if (selected) Icon(Icons.Filled.Check, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                    }
                 }
             }
 
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(20.dp))
+            Text("Pickup Time", style = MaterialTheme.typography.titleMedium)
+            Spacer(Modifier.height(8.dp))
             OutlinedTextField(
                 value = pickupTime,
                 onValueChange = { pickupTime = it },
-                label = { Text("Pickup time (optional, e.g. 2026-09-10T17:00)") },
+                label = { Text("e.g. 2026-09-18T17:00 (optional)") },
+                leadingIcon = { Icon(Icons.Filled.Schedule, contentDescription = null) },
                 singleLine = true,
+                shape = RoundedCornerShape(16.dp),
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -91,17 +108,12 @@ fun CheckoutScreen(
             }
 
             Spacer(Modifier.weight(1f))
-            Button(
+            AnimatedButton(
+                text = "Place Order",
                 onClick = { viewModel.placeOrder(selectedMethod, pickupTime.ifBlank { null }) },
-                enabled = orderState !is Resource.Loading,
+                loading = orderState is Resource.Loading,
                 modifier = Modifier.fillMaxWidth()
-            ) {
-                if (orderState is Resource.Loading) {
-                    CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
-                } else {
-                    Text("Place order")
-                }
-            }
+            )
         }
     }
 }

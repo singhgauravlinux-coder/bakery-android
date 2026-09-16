@@ -4,11 +4,16 @@ import android.Manifest
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -17,7 +22,9 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.crumbandember.app.data.repository.ConsentRepository
+import com.crumbandember.app.ui.components.AnimatedButton
 import com.crumbandember.app.ui.components.friendlyInlineMessage
+import com.crumbandember.app.ui.components.rememberFloatBob
 import com.crumbandember.app.util.Resource
 import com.crumbandember.app.util.ViewModelFactory
 
@@ -73,16 +80,26 @@ fun LocationConsentScreen(
         }
     }
 
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+    Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background), contentAlignment = Alignment.Center) {
         Column(
             modifier = Modifier.padding(32.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("📍", fontSize = 48.sp)
-            Spacer(Modifier.height(16.dp))
+            val bob by rememberFloatBob()
+            Box(
+                modifier = Modifier
+                    .size(96.dp)
+                    .graphicsLayer { translationY = bob }
+                    .clip(CircleShape)
+                    .background(Brush.linearGradient(listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.primaryContainer))),
+                contentAlignment = Alignment.Center
+            ) {
+                Text("📍", fontSize = 40.sp)
+            }
+            Spacer(Modifier.height(20.dp))
             Text(
                 "Use your location?",
-                style = MaterialTheme.typography.titleLarge,
+                style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.SemiBold,
                 textAlign = TextAlign.Center
             )
@@ -107,14 +124,13 @@ fun LocationConsentScreen(
                 )
             }
 
-            Spacer(Modifier.height(24.dp))
-            Button(
+            Spacer(Modifier.height(28.dp))
+            AnimatedButton(
+                text = if (saveState is Resource.Loading) "Saving…" else "Allow Location Access",
                 onClick = { requestLocation() },
-                enabled = saveState !is Resource.Loading,
+                loading = saveState is Resource.Loading,
                 modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(if (saveState is Resource.Loading) "Saving…" else "Allow location access")
-            }
+            )
             Spacer(Modifier.height(8.dp))
             TextButton(
                 onClick = { viewModel.setConsent(false) },
