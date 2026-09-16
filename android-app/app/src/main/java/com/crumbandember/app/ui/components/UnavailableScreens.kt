@@ -1,10 +1,16 @@
 package com.crumbandember.app.ui.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -39,32 +45,80 @@ fun friendlyInlineMessage(kind: ErrorKind, serverMessage: String): String = when
 fun UnavailableScreen(
     kind: ErrorKind,
     featureName: String,
-    onRetry: () -> Unit
+    onRetry: () -> Unit,
+    onGoHome: (() -> Unit)? = null
 ) {
     when (kind) {
-        ErrorKind.OFFLINE -> OfflineScreen(onRetry)
-        ErrorKind.GATEWAY_DOWN -> GatewayDownScreen(onRetry)
-        ErrorKind.SERVICE_UNAVAILABLE -> ServiceUnavailableScreen(featureName, onRetry)
-        ErrorKind.SERVER_ERROR -> ServerErrorScreen(onRetry)
-        else -> ServiceUnavailableScreen(featureName, onRetry) // safe fallback, still friendly
+        ErrorKind.OFFLINE -> OfflineScreen(onRetry, onGoHome)
+        ErrorKind.GATEWAY_DOWN -> GatewayDownScreen(onRetry, onGoHome)
+        ErrorKind.SERVICE_UNAVAILABLE -> ServiceUnavailableScreen(featureName, onRetry, onGoHome)
+        ErrorKind.SERVER_ERROR -> ServerErrorScreen(onRetry, onGoHome)
+        else -> ServiceUnavailableScreen(featureName, onRetry, onGoHome) // safe fallback, still friendly
+    }
+}
+
+/** A small, hand-drawn-feeling chef/bread mark built from vector shapes (no raster assets), with a
+ *  gentle idle float so branded error states feel alive rather than static clip-art. */
+@Composable
+private fun BakeryIllustration(accent: Color, badge: String) {
+    val bob by rememberFloatBob()
+    Box(
+        modifier = Modifier
+            .size(120.dp)
+            .graphicsLayer { translationY = bob },
+        contentAlignment = Alignment.Center
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .clip(CircleShape)
+                .background(Brush.radialGradient(listOf(accent.copy(alpha = 0.28f), Color.Transparent)))
+        )
+        Box(
+            modifier = Modifier
+                .size(84.dp)
+                .clip(CircleShape)
+                .background(Brush.linearGradient(listOf(accent, accent.copy(alpha = 0.75f)))),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("👨‍🍳", fontSize = 34.sp)
+        }
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .size(34.dp)
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.surface),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(badge, fontSize = 16.sp)
+        }
     }
 }
 
 @Composable
 private fun UnavailableScaffold(
-    emoji: String,
+    badgeEmoji: String,
+    accent: Color,
     title: String,
     body: String,
+    errorCode: String? = null,
     onRetry: () -> Unit,
-    retryLabel: String = "Try again"
+    onGoHome: (() -> Unit)?,
+    retryLabel: String = "Try Again"
 ) {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+    Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background), contentAlignment = Alignment.Center) {
         Column(
             modifier = Modifier.padding(32.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(emoji, fontSize = 48.sp)
-            Spacer(Modifier.height(16.dp))
+            BakeryIllustration(accent = accent, badge = badgeEmoji)
+            Spacer(Modifier.height(20.dp))
+            Text(
+                "Oops!",
+                style = MaterialTheme.typography.headlineSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
             Text(
                 title,
                 style = MaterialTheme.typography.titleLarge,
@@ -78,52 +132,84 @@ private fun UnavailableScaffold(
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            Spacer(Modifier.height(24.dp))
-            Button(onClick = onRetry) { Text(retryLabel) }
+            if (errorCode != null) {
+                Spacer(Modifier.height(16.dp))
+                Surface(
+                    shape = MaterialTheme.shapes.medium,
+                    color = MaterialTheme.colorScheme.surfaceVariant
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp, vertical = 10.dp)
+                            .fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text("Error Code", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(errorCode, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
+            Spacer(Modifier.height(28.dp))
+            AnimatedButton(text = retryLabel, onClick = onRetry, modifier = Modifier.fillMaxWidth(0.7f))
+            if (onGoHome != null) {
+                Spacer(Modifier.height(8.dp))
+                TextButton(onClick = onGoHome) { Text("Go to Home") }
+            }
         }
     }
 }
 
 /** Whole app is unreachable — api-gateway itself didn't respond. */
 @Composable
-fun GatewayDownScreen(onRetry: () -> Unit) {
+fun GatewayDownScreen(onRetry: () -> Unit, onGoHome: (() -> Unit)? = null) {
     UnavailableScaffold(
-        emoji = "🛠️",
-        title = "Our app server is down",
-        body = "We can't reach Crumb & Ember right now. This usually clears up in a few minutes — please try again shortly.",
-        onRetry = onRetry
+        badgeEmoji = "🛠️",
+        accent = Color(0xFFD9752B),
+        title = "Bad Gateway",
+        body = "The server is temporarily unavailable. Please try again in a little while.",
+        errorCode = "502",
+        onRetry = onRetry,
+        onGoHome = onGoHome
     )
 }
 
 /** api-gateway is up, but the one service behind this screen isn't. */
 @Composable
-fun ServiceUnavailableScreen(featureName: String, onRetry: () -> Unit) {
+fun ServiceUnavailableScreen(featureName: String, onRetry: () -> Unit, onGoHome: (() -> Unit)? = null) {
     UnavailableScaffold(
-        emoji = "😕",
-        title = "We're having trouble with $featureName",
-        body = "Something's not working on our end right now — we're on it and it'll be fixed ASAP. The rest of the app should still work fine.",
-        onRetry = onRetry
+        badgeEmoji = "⏳",
+        accent = Color(0xFF7A5233),
+        title = "Service Unavailable",
+        body = "We're currently having trouble with $featureName. We're on it — please try again in a moment. The rest of the app should still work fine.",
+        errorCode = "503",
+        onRetry = onRetry,
+        onGoHome = onGoHome
     )
 }
 
 /** Device has no network connection at all. */
 @Composable
-fun OfflineScreen(onRetry: () -> Unit) {
+fun OfflineScreen(onRetry: () -> Unit, onGoHome: (() -> Unit)? = null) {
     UnavailableScaffold(
-        emoji = "📡",
-        title = "You're offline",
+        badgeEmoji = "📡",
+        accent = Color(0xFF6F8F5B),
+        title = "You're Offline",
         body = "Check your Wi-Fi or mobile data and try again.",
-        onRetry = onRetry
+        onRetry = onRetry,
+        onGoHome = onGoHome
     )
 }
 
 /** api-gateway's own 500, not a downstream service. */
 @Composable
-fun ServerErrorScreen(onRetry: () -> Unit) {
+fun ServerErrorScreen(onRetry: () -> Unit, onGoHome: (() -> Unit)? = null) {
     UnavailableScaffold(
-        emoji = "⚠️",
-        title = "Something went wrong on our end",
-        body = "That wasn't supposed to happen. We've logged it — please try again in a moment.",
-        onRetry = onRetry
+        badgeEmoji = "⚠️",
+        accent = Color(0xFFB3261E),
+        title = "Something Went Wrong",
+        body = "We're experiencing a temporary issue on our server. Please try again later.",
+        errorCode = "500",
+        onRetry = onRetry,
+        onGoHome = onGoHome
     )
 }
