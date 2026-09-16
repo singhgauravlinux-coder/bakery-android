@@ -26,6 +26,7 @@ import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Receipt
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -40,6 +41,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.lerp
 import com.crumbandember.app.ui.theme.BakeryTokens
 import kotlinx.coroutines.delay
@@ -85,11 +87,11 @@ fun Hero3DCarousel(
     Column(modifier = modifier) {
         HorizontalPager(
             state = pagerState,
-            contentPadding = PaddingValues(horizontal = 36.dp),
+            contentPadding = PaddingValues(horizontal = 32.dp),
             pageSpacing = 14.dp,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(190.dp)
+                .height(210.dp)
         ) { page ->
             Hero3DCard(
                 slide = slides[page],
@@ -97,17 +99,18 @@ fun Hero3DCarousel(
                 onClick = { onCtaClick(slides[page]) }
             )
         }
-        Spacer(Modifier.height(10.dp))
+        Spacer(Modifier.height(12.dp))
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
         ) {
             repeat(pageCount) { i ->
                 val selected = i == pagerState.currentPage
                 Box(
                     modifier = Modifier
                         .padding(horizontal = 3.dp)
-                        .size(width = if (selected) 20.dp else 6.dp, height = 6.dp)
+                        .size(width = if (selected) 24.dp else 6.dp, height = 6.dp)
                         .clip(CircleShape)
                         .background(
                             if (selected) MaterialTheme.colorScheme.primary
@@ -115,6 +118,19 @@ fun Hero3DCarousel(
                         )
                 )
             }
+        }
+        Spacer(Modifier.height(6.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                "‹   Swipe to explore   ›",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                fontWeight = FontWeight.Medium
+            )
         }
     }
 }
@@ -127,6 +143,8 @@ fun Hero3DCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var favorited by remember(slide.title) { mutableStateOf(false) }
+
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -137,44 +155,82 @@ fun Hero3DCard(
                 scaleY = scale
                 rotationY = offset * -18f
                 cameraDistance = 16f * density
-                alpha = lerp(0.55f, 1f, 1f - offset.absoluteValue)
+                alpha = lerp(0.6f, 1f, 1f - offset.absoluteValue)
                 translationX = -offset * 26f
             }
             .clip(RoundedCornerShape(28.dp))
             .background(Brush.linearGradient(slide.accentColors))
             .clickable3D(onClick)
-            .padding(22.dp)
+            .padding(20.dp)
     ) {
+        // Top row: Brand sub-header and Favorite heart button
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.Top
+        ) {
+            Text(
+                "CRUMB & EMBER",
+                style = MaterialTheme.typography.labelSmall,
+                color = Color.White.copy(alpha = 0.75f),
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 1.5f.sp
+            )
+            FavoriteButton(
+                favorited = favorited,
+                onToggle = { favorited = !favorited }
+            )
+        }
+
+        // Center-Right decorative art/emoji
         Text(
             slide.emoji,
-            style = MaterialTheme.typography.displaySmall,
-            modifier = Modifier.align(Alignment.TopEnd)
+            style = MaterialTheme.typography.displayMedium,
+            modifier = Modifier
+                .align(Alignment.CenterEnd)
+                .padding(end = 8.dp)
         )
+
+        // Bottom CTA and title content
         Column(modifier = Modifier.align(Alignment.BottomStart)) {
             Text(
                 slide.title,
-                style = MaterialTheme.typography.headlineSmall,
+                style = MaterialTheme.typography.titleLarge,
                 color = Color.White,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                lineHeight = 26.sp
             )
             Spacer(Modifier.height(4.dp))
             Text(
                 slide.subtitle,
-                style = MaterialTheme.typography.bodyMedium,
-                color = Color.White.copy(alpha = 0.85f)
+                style = MaterialTheme.typography.bodySmall,
+                color = Color.White.copy(alpha = 0.9f),
+                maxLines = 2
             )
             Spacer(Modifier.height(12.dp))
             Surface(
                 shape = RoundedCornerShape(50),
                 color = Color.White,
+                shadowElevation = 2.dp,
                 modifier = Modifier.clickable3D(onClick)
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                 ) {
-                    Text(slide.ctaLabel, color = slide.accentColors.last(), fontWeight = FontWeight.SemiBold, style = MaterialTheme.typography.labelLarge)
-                    Icon(Icons.Filled.ChevronRight, contentDescription = null, tint = slide.accentColors.last(), modifier = Modifier.size(16.dp))
+                    Text(
+                        slide.ctaLabel,
+                        color = slide.accentColors.first(),
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.labelMedium
+                    )
+                    Spacer(Modifier.width(4.dp))
+                    Icon(
+                        Icons.Filled.ChevronRight,
+                        contentDescription = null,
+                        tint = slide.accentColors.first(),
+                        modifier = Modifier.size(16.dp)
+                    )
                 }
             }
         }
@@ -381,7 +437,7 @@ fun OrderTimeline(steps: List<TimelineStep>, modifier: Modifier = Modifier) {
 }
 
 /** Bottom bar tab identifiers shared across Home/Search/Orders/Cart/Profile. */
-enum class BakeryTab { HOME, ORDERS, CART, PROFILE }
+enum class BakeryTab { HOME, SEARCH, ORDERS, CART, PROFILE }
 
 @Composable
 fun BakeryBottomBar(
@@ -395,6 +451,12 @@ fun BakeryBottomBar(
             onClick = { onSelect(BakeryTab.HOME) },
             icon = { Icon(Icons.Filled.Home, contentDescription = "Home") },
             label = { Text("Home") }
+        )
+        NavigationBarItem(
+            selected = selected == BakeryTab.SEARCH,
+            onClick = { onSelect(BakeryTab.SEARCH) },
+            icon = { Icon(Icons.Filled.Search, contentDescription = "Search") },
+            label = { Text("Search") }
         )
         NavigationBarItem(
             selected = selected == BakeryTab.ORDERS,

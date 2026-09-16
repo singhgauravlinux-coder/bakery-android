@@ -3,6 +3,7 @@ package com.crumbandember.app.ui.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddShoppingCart
@@ -21,6 +22,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.crumbandember.app.data.model.Product
 import com.crumbandember.app.ui.theme.BakeryTokens
 import java.util.Locale
@@ -70,14 +72,14 @@ fun ProductCard(
     Column(
         modifier = modifier
             .clip(RoundedCornerShape(22.dp))
-            .shadow(6.dp, RoundedCornerShape(22.dp), clip = false)
+            .shadow(4.dp, RoundedCornerShape(22.dp), clip = false)
             .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(22.dp))
             .clickable(onClick = onClick)
     ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(120.dp)
+                .height(130.dp)
                 .clip(RoundedCornerShape(22.dp))
                 .background(Brush.linearGradient(art.colors))
         ) {
@@ -86,6 +88,28 @@ fun ProductCard(
                 style = MaterialTheme.typography.displaySmall,
                 modifier = Modifier.align(Alignment.Center)
             )
+            // Star rating pill
+            Surface(
+                shape = RoundedCornerShape(50),
+                color = Color.Black.copy(alpha = 0.45f),
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(8.dp)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                ) {
+                    Text("⭐", fontSize = 10.sp)
+                    Spacer(Modifier.width(3.dp))
+                    Text(
+                        "4.8",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
             FavoriteButton(
                 favorited = favorited,
                 onToggle = { favorited = !favorited },
@@ -96,12 +120,17 @@ fun ProductCard(
             Text(
                 product.name,
                 style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
             product.category?.let {
                 Spacer(Modifier.height(2.dp))
-                Text(it, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(
+                    it.replaceFirstChar { c -> c.uppercase() },
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
             Spacer(Modifier.height(8.dp))
             Row(
@@ -109,20 +138,23 @@ fun ProductCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(formatPrice(product.price), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
-                if (onQuickAdd != null) {
-                    Surface(
-                        shape = RoundedCornerShape(50),
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.clickable3D(onQuickAdd)
-                    ) {
-                        Icon(
-                            Icons.Filled.AddShoppingCart,
-                            contentDescription = "Add to cart",
-                            tint = MaterialTheme.colorScheme.onPrimary,
-                            modifier = Modifier.padding(6.dp).size(16.dp)
-                        )
-                    }
+                Text(
+                    formatPrice(product.price),
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Surface(
+                    shape = RoundedCornerShape(50),
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.clickable3D(onQuickAdd ?: onClick)
+                ) {
+                    Icon(
+                        Icons.Filled.AddShoppingCart,
+                        contentDescription = "Add to cart",
+                        tint = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier.padding(6.dp).size(16.dp)
+                    )
                 }
             }
         }
@@ -191,27 +223,56 @@ fun LoadingView() {
     }
 }
 
-/** Standard top bar: brand title, optional notification bell and a badged cart icon. */
+/** Standard top bar: brand title, optional notification bell, badged cart icon, and profile avatar. */
 @Composable
 fun BakeryTopBar(
     title: String,
     cartCount: Int = 0,
     onCartClick: (() -> Unit)? = null,
-    onNotificationsClick: (() -> Unit)? = null
+    onNotificationsClick: (() -> Unit)? = null,
+    onProfileClick: (() -> Unit)? = null
 ) {
     TopAppBar(
-        title = { Text(title, style = MaterialTheme.typography.titleLarge) },
+        title = {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("🌾", fontSize = 20.sp)
+                Spacer(Modifier.width(6.dp))
+                Text(title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+            }
+        },
         colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background),
         actions = {
             if (onNotificationsClick != null) {
                 IconButton(onClick = onNotificationsClick) {
-                    Icon(Icons.Filled.NotificationsNone, contentDescription = "Notifications")
+                    Box {
+                        Icon(Icons.Filled.NotificationsNone, contentDescription = "Notifications")
+                        Box(
+                            modifier = Modifier
+                                .size(8.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.primary)
+                                .align(Alignment.TopEnd)
+                        )
+                    }
                 }
             }
             if (onCartClick != null) {
                 BadgedBox(badge = { if (cartCount > 0) Badge { Text(cartCount.toString()) } }) {
                     IconButton(onClick = onCartClick) {
                         Icon(Icons.Filled.ShoppingCart, contentDescription = "Cart")
+                    }
+                }
+            }
+            if (onProfileClick != null) {
+                IconButton(onClick = onProfileClick) {
+                    Box(
+                        modifier = Modifier
+                            .size(30.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.primaryContainer),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("👨‍🍳", fontSize = 15.sp)
                     }
                 }
             }

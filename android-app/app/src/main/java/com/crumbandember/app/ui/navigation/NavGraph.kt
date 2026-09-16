@@ -26,13 +26,14 @@ import com.crumbandember.app.ui.screens.consent.LocationConsentScreen
 import com.crumbandember.app.ui.screens.orders.OrderDetailScreen
 import com.crumbandember.app.ui.screens.orders.OrderHistoryScreen
 import com.crumbandember.app.ui.screens.profile.ProfileScreen
+import com.crumbandember.app.ui.screens.splash.SplashScreen
 import com.crumbandember.app.util.Resource
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
 /**
  * Single NavHost for the whole app. Auth state (are we logged in?) decides
- * the start destination; every screen below auth reads userId from
+ * the destination after Splash; every screen below auth reads userId from
  * TokenManager rather than threading it through every nav argument.
  */
 @Composable
@@ -44,15 +45,21 @@ fun BakeryNavGraph(app: BakeryApplication) {
     // Simple in-memory cart badge count, refreshed whenever we land on the catalog.
     var cartCount by remember { mutableStateOf(0) }
 
-    // isLoggedIn starts out null until the DataStore flow emits its first
-    // value; wait for that before deciding the start destination so a
-    // logged-in user isn't flashed the login screen on cold start.
-    if (isLoggedIn == null) return
-
     NavHost(
         navController = navController,
-        startDestination = if (isLoggedIn == true) Screen.Catalog.route else Screen.Login.route
+        startDestination = Screen.Splash.route
     ) {
+        composable(Screen.Splash.route) {
+            SplashScreen(
+                onSplashFinished = {
+                    val destination = if (isLoggedIn == true) Screen.Catalog.route else Screen.Login.route
+                    navController.navigate(destination) {
+                        popUpTo(Screen.Splash.route) { inclusive = true }
+                    }
+                }
+            )
+        }
+
         composable(Screen.Login.route) {
             LoginScreen(
                 authRepository = app.authRepository,
@@ -113,6 +120,21 @@ fun BakeryNavGraph(app: BakeryApplication) {
         }
 
         composable(Screen.Catalog.route) {
+            val userName by app.authRepository.userName.collectAsState(initial = null)
+            CatalogScreen(
+                productRepository = app.productRepository,
+                cartCount = cartCount,
+                onProductClick = { productId ->
+                    navController.navigate(Screen.ProductDetail.createRoute(productId))
+                },
+                onCartClick = { navController.navigate(Screen.Cart.route) },
+                onProfileClick = { navController.navigate(Screen.Profile.route) },
+                onOrdersClick = { navController.navigate(Screen.Orders.route) },
+                userGreetingName = userName
+            )
+        }
+
+        composable(Screen.Search.route) {
             val userName by app.authRepository.userName.collectAsState(initial = null)
             CatalogScreen(
                 productRepository = app.productRepository,

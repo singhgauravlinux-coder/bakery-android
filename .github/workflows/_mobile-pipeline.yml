@@ -51,6 +51,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+
       - name: Short SHA
         id: sha
         run: echo "short_sha=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
@@ -82,7 +85,7 @@ jobs:
         run: ./gradlew assembleProductionRelease --stacktrace
 
       - name: Verify wire contract survives minification
-        run: scripts/verify-minified-wire-contract.sh productionRelease
+        run: bash scripts/verify-minified-wire-contract.sh productionRelease
 
       - name: Upload dev APK (build artifact — every push/PR, no gate)
         uses: actions/upload-artifact@v4
@@ -115,6 +118,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
@@ -142,7 +148,7 @@ jobs:
         run: ./gradlew assembleUatRelease --stacktrace
 
       - name: Verify wire contract survives minification
-        run: scripts/verify-minified-wire-contract.sh uatRelease
+        run: bash scripts/verify-minified-wire-contract.sh uatRelease
 
       - name: Publish uat build (versioned artifact — the mobile equivalent of pinning an image tag)
         uses: softprops/action-gh-release@v2
@@ -182,6 +188,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Make gradlew executable
+        run: chmod +x gradlew
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -225,7 +234,7 @@ jobs:
       # phone. If R8 renamed a wire model, stop here rather than publish a
       # build where every sign-in returns 400.
       - name: Verify wire contract survives minification
-        run: scripts/verify-minified-wire-contract.sh productionRelease
+        run: bash scripts/verify-minified-wire-contract.sh productionRelease
 
       - name: Upload production APK (build artifact — for testing pre-Play Store)
         uses: actions/upload-artifact@v4

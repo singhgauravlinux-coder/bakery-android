@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.crumbandember.app.data.model.ConsentRecord
 import com.crumbandember.app.data.repository.AuthRepository
 import com.crumbandember.app.data.repository.ConsentRepository
@@ -66,6 +67,7 @@ fun ProfileScreen(
                 onSelect = { tab ->
                     when (tab) {
                         BakeryTab.HOME -> onHomeClick()
+                        BakeryTab.SEARCH -> onHomeClick()
                         BakeryTab.ORDERS -> onViewOrders()
                         BakeryTab.CART -> onCartClick()
                         BakeryTab.PROFILE -> {}
@@ -79,21 +81,60 @@ fun ProfileScreen(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(
                     modifier = Modifier
-                        .size(56.dp)
+                        .size(64.dp)
                         .clip(CircleShape)
                         .background(MaterialTheme.colorScheme.primaryContainer),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text((userName?.firstOrNull()?.toString() ?: "🥐").uppercase(), style = MaterialTheme.typography.titleLarge)
+                    Text(
+                        (userName?.firstOrNull()?.toString() ?: "👨‍🍳").uppercase(),
+                        style = MaterialTheme.typography.titleLarge
+                    )
                 }
                 Spacer(Modifier.width(14.dp))
                 Column {
-                    Text(userName ?: "Guest baker", style = MaterialTheme.typography.titleLarge)
-                    Text("Signed in", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(userName ?: "Artisan Baker", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                    Text("Crumb Club Member", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Medium)
                 }
             }
 
-            Spacer(Modifier.height(28.dp))
+            Spacer(Modifier.height(20.dp))
+            // Loyalty Points Card
+            Surface(
+                shape = RoundedCornerShape(20.dp),
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(
+                    modifier = Modifier.padding(20.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text(
+                            "Crumb Club Rewards",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)
+                        )
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            "350 Flour Points",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onPrimary
+                        )
+                        Spacer(Modifier.height(2.dp))
+                        Text(
+                            "₹50 discount unlocked on your next order",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f)
+                        )
+                    }
+                    Text("🌾", fontSize = 36.sp)
+                }
+            }
+
+            Spacer(Modifier.height(24.dp))
             Text("Account", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(Modifier.height(6.dp))
             ProfileRow(icon = Icons.Filled.Receipt, title = "Order history", subtitle = "View past & current orders", onClick = onViewOrders)
