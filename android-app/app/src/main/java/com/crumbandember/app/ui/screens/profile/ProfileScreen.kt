@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.crumbandember.app.data.model.ConsentRecord
 import com.crumbandember.app.data.repository.AuthRepository
 import com.crumbandember.app.data.repository.ConsentRepository
@@ -129,7 +130,7 @@ fun ProfileScreen(
                             color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f)
                         )
                     }
-                    Text("🌾", fontSize = androidx.compose.ui.unit.sp(36))
+                    Text("🌾", fontSize = 36.sp)
                 }
             }
 
