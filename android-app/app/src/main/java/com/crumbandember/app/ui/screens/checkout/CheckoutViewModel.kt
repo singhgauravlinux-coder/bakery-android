@@ -118,7 +118,11 @@ class CheckoutViewModel(
                 // Order stays pending_payment on the server — same order is
                 // reused on the next attempt (see `pendingOrder` above), the
                 // person is not charged twice or left with duplicate orders.
-                _orderState.value = paymentResult
+                _orderState.value = if (paymentResult is Resource.Error) {
+                    Resource.Error(paymentResult.message, paymentResult.kind, paymentResult.debugDetail)
+                } else {
+                    Resource.Error("Payment failed")
+                }
                 return@launch
             }
             if (paymentResult.data.status != "succeeded") {
