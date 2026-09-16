@@ -3,6 +3,7 @@ package com.crumbandember.app.ui.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddShoppingCart
@@ -21,6 +22,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.crumbandember.app.data.model.Product
 import com.crumbandember.app.ui.theme.BakeryTokens
 import java.util.Locale
@@ -98,7 +100,7 @@ fun ProductCard(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                 ) {
-                    Text("⭐", fontSize = androidx.compose.ui.unit.sp(10))
+                    Text("⭐", fontSize = 10.sp)
                     Spacer(Modifier.width(3.dp))
                     Text(
                         "4.8",
@@ -233,7 +235,7 @@ fun BakeryTopBar(
     TopAppBar(
         title = {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("🌾", fontSize = androidx.compose.ui.unit.sp(20))
+                Text("🌾", fontSize = 20.sp)
                 Spacer(Modifier.width(6.dp))
                 Text(title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
             }
@@ -270,7 +272,7 @@ fun BakeryTopBar(
                             .background(MaterialTheme.colorScheme.primaryContainer),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text("👨‍🍳", fontSize = androidx.compose.ui.unit.sp(15))
+                        Text("👨‍🍳", fontSize = 15.sp)
                     }
                 }
             }
