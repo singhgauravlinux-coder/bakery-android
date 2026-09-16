@@ -3,6 +3,7 @@ package com.crumbandember.app.ui.components
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
@@ -22,6 +23,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Receipt
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -388,13 +393,13 @@ fun BakeryBottomBar(
         NavigationBarItem(
             selected = selected == BakeryTab.HOME,
             onClick = { onSelect(BakeryTab.HOME) },
-            icon = { Icon(androidx.compose.material.icons.Icons.Filled.Home, contentDescription = "Home") },
+            icon = { Icon(Icons.Filled.Home, contentDescription = "Home") },
             label = { Text("Home") }
         )
         NavigationBarItem(
             selected = selected == BakeryTab.ORDERS,
             onClick = { onSelect(BakeryTab.ORDERS) },
-            icon = { Icon(androidx.compose.material.icons.Icons.Filled.Receipt, contentDescription = "Orders") },
+            icon = { Icon(Icons.Filled.Receipt, contentDescription = "Orders") },
             label = { Text("Orders") }
         )
         NavigationBarItem(
@@ -402,7 +407,7 @@ fun BakeryBottomBar(
             onClick = { onSelect(BakeryTab.CART) },
             icon = {
                 BadgedBox(badge = { if (cartCount > 0) Badge { Text(cartCount.toString()) } }) {
-                    Icon(androidx.compose.material.icons.Icons.Filled.ShoppingCart, contentDescription = "Cart")
+                    Icon(Icons.Filled.ShoppingCart, contentDescription = "Cart")
                 }
             },
             label = { Text("Cart") }
@@ -410,7 +415,7 @@ fun BakeryBottomBar(
         NavigationBarItem(
             selected = selected == BakeryTab.PROFILE,
             onClick = { onSelect(BakeryTab.PROFILE) },
-            icon = { Icon(androidx.compose.material.icons.Icons.Filled.Person, contentDescription = "Profile") },
+            icon = { Icon(Icons.Filled.Person, contentDescription = "Profile") },
             label = { Text("Profile") }
         )
     }
