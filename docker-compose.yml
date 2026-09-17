@@ -186,6 +186,20 @@ services:
       redis:
         condition: service_healthy
 
+  consent-service:
+    <<: *node-service
+    build: ./services/consent-service
+    ports:
+      - "3024:3024"
+    environment:
+      <<: *node-env
+      SERVICE_NAME: consent-service
+      PORT: "3024"
+      DATABASE_URL: postgresql://${POSTGRES_USER:-bakery}:${POSTGRES_PASSWORD:-bakery}@postgres:5432/${POSTGRES_DB:-bakery}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
   order-service:
     <<: *node-service
     build: ./services/order-service
