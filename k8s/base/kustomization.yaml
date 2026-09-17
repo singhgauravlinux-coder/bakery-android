@@ -16,6 +16,7 @@ resources:
   - services/auth-service.yaml
   - services/baking-schedule-service.yaml
   - services/cart-service.yaml
+  - services/consent-service.yaml
   - services/currency-service.yaml
   - services/delivery-service.yaml
   - services/frontend.yaml
