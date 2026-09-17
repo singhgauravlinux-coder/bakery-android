@@ -63,6 +63,8 @@ commonLabels:
      #     cpu: 500m
         #  cpu: 100m
      #     cpu: 500m
+        #  cpu: 100m
+     #     cpu: 500m
 patches:
 - patch: |-
     - op: replace
@@ -159,7 +161,7 @@ images:
   newTag: 4189a99
 - name: ghcr.io/singhgauravlinux-coder/bakery-android/recommendation-service
   newName: ghcr.io/singhgauravlinux-coder/bakery-android/recommendation-service
-  newTag: e7b7cf5
+  newTag: a21d217
 - name: ghcr.io/singhgauravlinux-coder/bakery-android/review-service
   newName: ghcr.io/singhgauravlinux-coder/bakery-android/review-service
   newTag: 1cb6ef9
