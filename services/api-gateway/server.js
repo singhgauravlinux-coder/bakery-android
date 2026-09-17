@@ -40,6 +40,7 @@ const UPSTREAMS = {
   prices: process.env.PRICING_SERVICE_URL || 'http://pricing-service:3005',
   quote: process.env.PRICING_SERVICE_URL || 'http://pricing-service:3005',
   carts: process.env.CART_SERVICE_URL || 'http://cart-service:3006',
+  consent: process.env.CONSENT_SERVICE_URL || 'http://consent-service:3024',
   orders: process.env.ORDER_SERVICE_URL || 'http://order-service:3007',
   payments: process.env.PAYMENT_SERVICE_URL || 'http://payment-service:3008',
   deliveries: process.env.DELIVERY_SERVICE_URL || 'http://delivery-service:3009',
