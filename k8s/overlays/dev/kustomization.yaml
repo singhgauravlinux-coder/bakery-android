@@ -63,6 +63,7 @@ commonLabels:
 
 
 
+
 patches:
 - path: patch-ingress-host.yaml
   target:
@@ -127,7 +128,7 @@ images:
   newTag: ab9ce23
 - name: ghcr.io/singhgauravlinux-coder/bakery-android/api-gateway
   newName: ghcr.io/singhgauravlinux-coder/bakery-android/api-gateway
-  newTag: e7b7cf5
+  newTag: ab9ce23
 - name: ghcr.io/singhgauravlinux-coder/bakery-android/auth-service
   newName: ghcr.io/singhgauravlinux-coder/bakery-android/auth-service
   newTag: 1cb6ef9
