@@ -54,6 +54,7 @@ fun LocationConsentScreen(
         factory = ViewModelFactory { ConsentViewModel(userId, consentRepository) }
     )
     val saveState by viewModel.saveState.collectAsState()
+    val decided by viewModel.decided.collectAsState()
     val context = LocalContext.current
 
     val permissionLauncher = rememberLauncherForActivityResult(
@@ -65,8 +66,8 @@ fun LocationConsentScreen(
         viewModel.setConsent(osGranted)
     }
 
-    LaunchedEffect(saveState) {
-        if (saveState is Resource.Success) onDone()
+    LaunchedEffect(decided) {
+        if (decided) onDone()
     }
 
     fun requestLocation() {
