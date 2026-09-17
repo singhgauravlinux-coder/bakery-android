@@ -67,6 +67,7 @@ commonLabels:
 
 
 
+
 patches:
 - path: patch-ingress-host.yaml
   target:
@@ -143,7 +144,7 @@ images:
   newTag: ab9ce23
 - name: ghcr.io/singhgauravlinux-coder/bakery-android/currency-service
   newName: ghcr.io/singhgauravlinux-coder/bakery-android/currency-service
-  newTag: 1cb6ef9
+  newTag: 8b4378c
 - name: ghcr.io/singhgauravlinux-coder/bakery-android/delivery-service
   newName: ghcr.io/singhgauravlinux-coder/bakery-android/delivery-service
   newTag: 1cb6ef9
