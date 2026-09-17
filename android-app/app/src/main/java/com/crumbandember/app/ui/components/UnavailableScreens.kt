@@ -38,6 +38,7 @@ fun friendlyInlineMessage(kind: ErrorKind, serverMessage: String): String = when
     ErrorKind.SERVICE_UNAVAILABLE -> "We're having trouble with this right now. We're on it — please try again in a moment."
     ErrorKind.OFFLINE -> "You're offline — check your connection and try again."
     ErrorKind.SERVER_ERROR -> "Something went wrong on our end. Please try again."
+    ErrorKind.NOT_FOUND -> "That feature isn't available right now. Please try again later."
     else -> serverMessage
 }
 
@@ -53,6 +54,7 @@ fun UnavailableScreen(
         ErrorKind.GATEWAY_DOWN -> GatewayDownScreen(onRetry, onGoHome)
         ErrorKind.SERVICE_UNAVAILABLE -> ServiceUnavailableScreen(featureName, onRetry, onGoHome)
         ErrorKind.SERVER_ERROR -> ServerErrorScreen(onRetry, onGoHome)
+        ErrorKind.NOT_FOUND -> NotFoundScreen(featureName, onGoHome)
         else -> ServiceUnavailableScreen(featureName, onRetry, onGoHome) // safe fallback, still friendly
     }
 }
@@ -103,7 +105,7 @@ private fun UnavailableScaffold(
     title: String,
     body: String,
     errorCode: String? = null,
-    onRetry: () -> Unit,
+    onRetry: (() -> Unit)? = null,
     onGoHome: (() -> Unit)?,
     retryLabel: String = "Try Again"
 ) {
@@ -150,10 +152,14 @@ private fun UnavailableScaffold(
                 }
             }
             Spacer(Modifier.height(28.dp))
-            AnimatedButton(text = retryLabel, onClick = onRetry, modifier = Modifier.fillMaxWidth(0.7f))
-            if (onGoHome != null) {
-                Spacer(Modifier.height(8.dp))
-                TextButton(onClick = onGoHome) { Text("Go to Home") }
+            if (onRetry != null) {
+                AnimatedButton(text = retryLabel, onClick = onRetry, modifier = Modifier.fillMaxWidth(0.7f))
+                if (onGoHome != null) {
+                    Spacer(Modifier.height(8.dp))
+                    TextButton(onClick = onGoHome) { Text("Go to Home") }
+                }
+            } else if (onGoHome != null) {
+                AnimatedButton(text = "Go to Home", onClick = onGoHome, modifier = Modifier.fillMaxWidth(0.7f))
             }
         }
     }
@@ -196,6 +202,23 @@ fun OfflineScreen(onRetry: () -> Unit, onGoHome: (() -> Unit)? = null) {
         title = "You're Offline",
         body = "Check your Wi-Fi or mobile data and try again.",
         onRetry = onRetry,
+        onGoHome = onGoHome
+    )
+}
+
+/** Gateway is up and answered, but this route/resource genuinely doesn't
+ *  exist right now (e.g. a feature whose backend was pulled). Retrying the
+ *  same request wouldn't help, so this screen offers "Go to Home" instead
+ *  of a retry button. */
+@Composable
+fun NotFoundScreen(featureName: String, onGoHome: (() -> Unit)? = null) {
+    UnavailableScaffold(
+        badgeEmoji = "🔍",
+        accent = Color(0xFF6B6B6B),
+        title = "Not Found",
+        body = "We couldn't find $featureName. It may have moved or isn't available right now.",
+        errorCode = "404",
+        onRetry = null,
         onGoHome = onGoHome
     )
 }
