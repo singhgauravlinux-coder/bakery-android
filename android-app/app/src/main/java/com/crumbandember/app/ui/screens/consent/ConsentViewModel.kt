@@ -20,6 +20,13 @@ class ConsentViewModel(
     private val _saveState = MutableStateFlow<Resource<Unit>>(Resource.Idle)
     val saveState: StateFlow<Resource<Unit>> = _saveState
 
+    /** True once the person has made a choice in this session, whether or
+     *  not it made it to consent-service. The screen navigates on this,
+     *  not on [saveState], so a slow or unreachable backend never traps
+     *  someone on the consent prompt. */
+    private val _decided = MutableStateFlow(false)
+    val decided: StateFlow<Boolean> = _decided
+
     fun load() {
         viewModelScope.launch {
             _consent.value = Resource.Loading
@@ -28,10 +35,19 @@ class ConsentViewModel(
     }
 
     /**
-     * Persists the decision to consent-service. The caller is responsible
-     * for actually requesting the OS runtime permission when `granted` is
-     * true — this only records what the person chose, it doesn't ask
-     * Android for anything itself.
+     * Records the decision. The caller is responsible for actually
+     * requesting the OS runtime permission when `granted` is true — this
+     * only records what the person chose, it doesn't ask Android for
+     * anything itself.
+     *
+     * Persisting to consent-service is best-effort: [_decided] flips as
+     * soon as the person taps, regardless of whether the network call
+     * behind it succeeds, so a down or slow consent-service never blocks
+     * someone from reaching the app after they've made a choice. A failed
+     * save is surfaced via [saveState] only as a quiet, non-blocking
+     * signal (e.g. a snackbar) — it never gates navigation. The stale
+     * value gets corrected on the next successful getLocationConsent/
+     * setConsent call.
      */
     fun setConsent(granted: Boolean) {
         viewModelScope.launch {
@@ -45,6 +61,7 @@ class ConsentViewModel(
                 is Resource.Error -> Resource.Error(result.message, result.kind)
                 else -> Resource.Idle
             }
+            _decided.value = true
         }
     }
 }
