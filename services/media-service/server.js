@@ -19,7 +19,7 @@ const logger = pino({
 const app = express();
 app.use(express.json());
 // --- Trace ID propagation -------------------------------------------------
-// Accept X-Trace-Id from the caller (falling back to X-Request-Id), otherwise
+// Accept X-Trace-Id from the caller (falling back to X-Request-Id), otherwise trace ID
 // mint one. The id is echoed on the response and stamped on every log line so
 // a single request can be followed across the gateway and every service.
 app.use((req, res, next) => {
