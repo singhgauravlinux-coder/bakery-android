@@ -42,7 +42,11 @@ sealed class Resource<out T> {
     object Idle : Resource<Nothing>()
     object Loading : Resource<Nothing>()
     data class Success<T>(val data: T) : Resource<T>()
-    data class Error(val message: String, val kind: ErrorKind = ErrorKind.UNKNOWN) : Resource<Nothing>()
+    data class Error(
+        val message: String,
+        val kind: ErrorKind = ErrorKind.UNKNOWN,
+        val debugDetail: String? = null
+    ) : Resource<Nothing>()
 }
 
 /**

@@ -5,7 +5,9 @@ import com.crumbandember.app.data.api.NetworkModule
 import com.crumbandember.app.data.local.TokenManager
 import com.crumbandember.app.data.repository.AuthRepository
 import com.crumbandember.app.data.repository.CartRepository
+import com.crumbandember.app.data.repository.ConsentRepository
 import com.crumbandember.app.data.repository.OrderRepository
+import com.crumbandember.app.data.repository.PaymentRepository
 import com.crumbandember.app.data.repository.ProductRepository
 import com.crumbandember.app.util.AppNetworkState
 import kotlinx.coroutines.CoroutineScope
@@ -28,6 +30,10 @@ class BakeryApplication : Application() {
         private set
     lateinit var orderRepository: OrderRepository
         private set
+    lateinit var consentRepository: ConsentRepository
+        private set
+    lateinit var paymentRepository: PaymentRepository
+        private set
 
     private val appScope = CoroutineScope(SupervisorJob())
 
@@ -48,5 +54,7 @@ class BakeryApplication : Application() {
         productRepository = ProductRepository(api)
         cartRepository = CartRepository(api)
         orderRepository = OrderRepository(api)
+        consentRepository = ConsentRepository(api)
+        paymentRepository = PaymentRepository(api)
     }
 }
