@@ -27,6 +27,8 @@ commonLabels:
 # makes extra replicas safe, so it is set explicitly here (this patch is
 # listed after the blanket one, so it wins).
 
+        #  cpu: 100m
+     #     cpu: 500m
 patches:
 - patch: |-
     - op: replace
@@ -63,7 +65,7 @@ patches:
 images:
 - name: ghcr.io/singhgauravlinux-coder/bakery-android/analytics-service
   newName: ghcr.io/singhgauravlinux-coder/bakery-android/analytics-service
-  newTag: 1cb6ef9
+  newTag: ab9ce23
 - name: ghcr.io/singhgauravlinux-coder/bakery-android/api-gateway
   newName: ghcr.io/singhgauravlinux-coder/bakery-android/api-gateway
   newTag: e7b7cf5
