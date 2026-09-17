@@ -91,6 +91,7 @@ commonLabels:
 
 
 
+
 patches:
 - path: patch-ingress-host.yaml
   target:
@@ -188,7 +189,7 @@ images:
   newTag: 246f7a4
 - name: ghcr.io/singhgauravlinux-coder/bakery-android/media-service
   newName: ghcr.io/singhgauravlinux-coder/bakery-android/media-service
-  newTag: 1cb6ef9
+  newTag: 9a1e6ea
 - name: ghcr.io/singhgauravlinux-coder/bakery-android/notification-service
   newName: ghcr.io/singhgauravlinux-coder/bakery-android/notification-service
   newTag: 76451c2
