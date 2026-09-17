@@ -21,23 +21,6 @@ resources:
 commonLabels:
   environment: dev
 
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 # Image tags are rewritten in-place by each service's pipeline, e.g.:
 #   images:
 #     - name: ghcr.io/OWNER/bakery-language/auth-service
@@ -48,51 +31,8 @@ commonLabels:
 # listed after the blanket one, so it wins).
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 # The verification email links back into the SPA, so the base URL has to be
 # this environment's public host or the link lands on the wrong stack.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -177,82 +117,80 @@ patches:
   target:
     kind: Deployment
     name: auth-service
+
 images:
 - name: ghcr.io/singhgauravlinux-coder/bakery-android/analytics-service
   newName: ghcr.io/singhgauravlinux-coder/bakery-android/analytics-service
-  newTag: 9dd67f8
+  newTag: 1cb6ef9
 - name: ghcr.io/singhgauravlinux-coder/bakery-android/api-gateway
   newName: ghcr.io/singhgauravlinux-coder/bakery-android/api-gateway
-  newTag: 9dd67f8
+  newTag: 1cb6ef9
 - name: ghcr.io/singhgauravlinux-coder/bakery-android/auth-service
   newName: ghcr.io/singhgauravlinux-coder/bakery-android/auth-service
-  newTag: 9dd67f8
+  newTag: 1cb6ef9
 - name: ghcr.io/singhgauravlinux-coder/bakery-android/baking-schedule-service
   newName: ghcr.io/singhgauravlinux-coder/bakery-android/baking-schedule-service
-  newTag: 9dd67f8
+  newTag: 1cb6ef9
 - name: ghcr.io/singhgauravlinux-coder/bakery-android/cart-service
   newName: ghcr.io/singhgauravlinux-coder/bakery-android/cart-service
-  newTag: 9dd67f8
-- name: ghcr.io/singhgauravlinux-coder/bakery-android/consent-service
-  newName: ghcr.io/singhgauravlinux-coder/bakery-android/consent-service
-  newTag: 92b5278
+  newTag: 1cb6ef9
 - name: ghcr.io/singhgauravlinux-coder/bakery-android/currency-service
   newName: ghcr.io/singhgauravlinux-coder/bakery-android/currency-service
-  newTag: 9dd67f8
+  newTag: 1cb6ef9
 - name: ghcr.io/singhgauravlinux-coder/bakery-android/delivery-service
   newName: ghcr.io/singhgauravlinux-coder/bakery-android/delivery-service
-  newTag: 9dd67f8
+  newTag: 1cb6ef9
 - name: ghcr.io/singhgauravlinux-coder/bakery-android/frontend
   newName: ghcr.io/singhgauravlinux-coder/bakery-android/frontend
-  newTag: 9dd67f8
+  newTag: 1cb6ef9
 - name: ghcr.io/singhgauravlinux-coder/bakery-android/inventory-service
   newName: ghcr.io/singhgauravlinux-coder/bakery-android/inventory-service
-  newTag: 9dd67f8
+  newTag: 1cb6ef9
 - name: ghcr.io/singhgauravlinux-coder/bakery-android/invoice-service
   newName: ghcr.io/singhgauravlinux-coder/bakery-android/invoice-service
-  newTag: 9dd67f8
+  newTag: 1cb6ef9
 - name: ghcr.io/singhgauravlinux-coder/bakery-android/language-service
   newName: ghcr.io/singhgauravlinux-coder/bakery-android/language-service
-  newTag: 9dd67f8
+  newTag: 1cb6ef9
 - name: ghcr.io/singhgauravlinux-coder/bakery-android/loyalty-service
   newName: ghcr.io/singhgauravlinux-coder/bakery-android/loyalty-service
-  newTag: 9dd67f8
+  newTag: 1cb6ef9
 - name: ghcr.io/singhgauravlinux-coder/bakery-android/media-service
   newName: ghcr.io/singhgauravlinux-coder/bakery-android/media-service
-  newTag: 9dd67f8
+  newTag: 1cb6ef9
 - name: ghcr.io/singhgauravlinux-coder/bakery-android/notification-service
   newName: ghcr.io/singhgauravlinux-coder/bakery-android/notification-service
-  newTag: 9dd67f8
+  newTag: 1cb6ef9
 - name: ghcr.io/singhgauravlinux-coder/bakery-android/order-service
   newName: ghcr.io/singhgauravlinux-coder/bakery-android/order-service
-  newTag: 9dd67f8
+  newTag: 1cb6ef9
 - name: ghcr.io/singhgauravlinux-coder/bakery-android/payment-service
   newName: ghcr.io/singhgauravlinux-coder/bakery-android/payment-service
-  newTag: 9dd67f8
+  newTag: 1cb6ef9
 - name: ghcr.io/singhgauravlinux-coder/bakery-android/pricing-service
   newName: ghcr.io/singhgauravlinux-coder/bakery-android/pricing-service
-  newTag: 9dd67f8
+  newTag: 1cb6ef9
 - name: ghcr.io/singhgauravlinux-coder/bakery-android/product-catalog-service
   newName: ghcr.io/singhgauravlinux-coder/bakery-android/product-catalog-service
-  newTag: 9dd67f8
+  newTag: 1cb6ef9
 - name: ghcr.io/singhgauravlinux-coder/bakery-android/promotion-service
   newName: ghcr.io/singhgauravlinux-coder/bakery-android/promotion-service
-  newTag: 9dd67f8
+  newTag: 1cb6ef9
 - name: ghcr.io/singhgauravlinux-coder/bakery-android/recipe-service
   newName: ghcr.io/singhgauravlinux-coder/bakery-android/recipe-service
-  newTag: 9dd67f8
+  newTag: 1cb6ef9
 - name: ghcr.io/singhgauravlinux-coder/bakery-android/recommendation-service
   newName: ghcr.io/singhgauravlinux-coder/bakery-android/recommendation-service
-  newTag: 3f7b77b
+  newTag: 1cb6ef9
 - name: ghcr.io/singhgauravlinux-coder/bakery-android/review-service
   newName: ghcr.io/singhgauravlinux-coder/bakery-android/review-service
-  newTag: 9dd67f8
+  newTag: 1cb6ef9
 - name: ghcr.io/singhgauravlinux-coder/bakery-android/search-service
   newName: ghcr.io/singhgauravlinux-coder/bakery-android/search-service
-  newTag: 9dd67f8
+  newTag: 1cb6ef9
 - name: ghcr.io/singhgauravlinux-coder/bakery-android/supplier-service
   newName: ghcr.io/singhgauravlinux-coder/bakery-android/supplier-service
-  newTag: 9dd67f8
+  newTag: 1cb6ef9
 - name: ghcr.io/singhgauravlinux-coder/bakery-android/user-service
   newName: ghcr.io/singhgauravlinux-coder/bakery-android/user-service
-  newTag: 9dd67f8
+  newTag: 1cb6ef9

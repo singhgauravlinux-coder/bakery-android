@@ -169,16 +169,3 @@ CREATE TABLE IF NOT EXISTS invoices (
   due_in_days INTEGER NOT NULL DEFAULT 14
 );
 CREATE INDEX IF NOT EXISTS idx_invoices_order ON invoices (order_id);
-
--- Consent decisions (starting with location access) — see
--- db/migrations/0011_location_consents.sql / services/consent-service.
-CREATE TABLE IF NOT EXISTS user_consents (
-  user_id       TEXT NOT NULL,
-  consent_type  TEXT NOT NULL,
-  granted       BOOLEAN NOT NULL,
-  source        TEXT NOT NULL DEFAULT 'app',
-  responded_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
-  updated_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
-  PRIMARY KEY (user_id, consent_type)
-);
-CREATE INDEX IF NOT EXISTS idx_user_consents_type ON user_consents (consent_type);

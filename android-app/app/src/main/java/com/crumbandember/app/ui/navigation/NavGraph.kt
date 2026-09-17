@@ -71,7 +71,7 @@ fun BakeryNavGraph(app: BakeryApplication) {
                     scope.launch {
                         val userId = app.authRepository.currentUserId() ?: ""
                         val consentResult = app.consentRepository.getLocationConsent(userId)
-                        val neverAsked = (consentResult as? Resource.Success)?.data?.granted == null
+                        val neverAsked = (consentResult as? Resource.Success<com.crumbandember.app.data.model.ConsentRecord>)?.data?.granted == null
                         val destination = if (neverAsked) Screen.LocationConsent.route else Screen.Catalog.route
                         navController.navigate(destination) {
                             popUpTo(Screen.Login.route) { inclusive = true }

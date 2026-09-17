@@ -57,8 +57,7 @@ const UPSTREAMS = {
   media: process.env.MEDIA_SERVICE_URL || 'http://media-service:3020',
   invoices: process.env.INVOICE_SERVICE_URL || 'http://invoice-service:3021',
   currency: process.env.CURRENCY_SERVICE_URL || 'http://currency-service:3022',
-  language: process.env.LANGUAGE_SERVICE_URL || 'http://language-service:3023',
-  consent: process.env.CONSENT_SERVICE_URL || 'http://consent-service:3024'
+  language: process.env.LANGUAGE_SERVICE_URL || 'http://language-service:3023'
 };
 
 // Distinct upstreams, for aggregated health checks on GET /api/status.

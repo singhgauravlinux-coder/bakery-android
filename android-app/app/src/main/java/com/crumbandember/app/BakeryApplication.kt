@@ -30,9 +30,9 @@ class BakeryApplication : Application() {
         private set
     lateinit var orderRepository: OrderRepository
         private set
-    lateinit var paymentRepository: PaymentRepository
-        private set
     lateinit var consentRepository: ConsentRepository
+        private set
+    lateinit var paymentRepository: PaymentRepository
         private set
 
     private val appScope = CoroutineScope(SupervisorJob())
@@ -54,7 +54,7 @@ class BakeryApplication : Application() {
         productRepository = ProductRepository(api)
         cartRepository = CartRepository(api)
         orderRepository = OrderRepository(api)
-        paymentRepository = PaymentRepository(api)
         consentRepository = ConsentRepository(api)
+        paymentRepository = PaymentRepository(api)
     }
 }
