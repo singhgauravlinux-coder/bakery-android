@@ -30,9 +30,7 @@ The core commerce flow end-to-end, matching what a customer does on the storefro
   (`order-service`)
 - **Order confirmation & history** — look up any order by id, list all of a user's
   orders.
-- **Profile** — shows the signed-in user, logout, and current location-access status.
-- **Location consent** — a dedicated screen shown once, right after login, if the person
-  has never been asked; revisit anytime from Account > Location access. (`consent-service`)
+- **Profile** — shows the signed-in user, logout.
 
 ## What's not wired up yet
 
@@ -132,31 +130,7 @@ same GitHub Environment reviewers the backend's services already use — see
 `../docs/DEPLOYMENT.md#the-mobile-apps-place-in-this-pipeline` for the full
 picture of how mobile and backend promotions line up.
 
-## Location consent
-
-`ui/screens/consent/LocationConsentScreen.kt` separates two different yes/no's, on purpose:
-
-1. **Does the person consent** — recorded in `consent-service`'s `user_consents` table via
-   `ConsentRepository`. This is what "we asked, they said yes" means for compliance
-   purposes, and it survives reinstalls/device changes since it lives server-side, not in
-   `SharedPreferences`.
-2. **Does Android grant the runtime permission** — `ACCESS_FINE_LOCATION`, requested via
-   `ActivityResultContracts.RequestPermission()` only *after* the person says yes on (1).
-   Android can revoke this in system Settings at any time without telling the app, so the
-   two can drift; that's fine, (1) is the source of truth for "were they asked and what did
-   they say," not "is the OS permission live right now."
-
-Saying "Not now" skips the OS dialog entirely — no point interrupting someone who already
-said no. If Android denies the permission after the person tapped "Allow," the saved
-consent flag is corrected back to `false` so the two can't end up silently contradicting
-each other.
-
-Shown once, automatically, right after login, only if `GET /consent/:userId` comes back
-with `granted: null` (never asked). Revisit the decision anytime from **Account > Location
-access**, which shows live status (Allowed / Not allowed / Not asked yet) and re-opens the
-same screen.
-
-
+## Project layout
 
 ```
 app/src/main/java/com/crumbandember/app/

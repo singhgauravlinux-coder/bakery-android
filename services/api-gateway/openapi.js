@@ -23,7 +23,7 @@ module.exports = {
     'gateway', 'auth', 'users', 'products', 'inventory', 'pricing', 'cart',
     'orders', 'payments', 'deliveries', 'notifications', 'reviews', 'search',
     'recommendations', 'promotions', 'loyalty', 'recipes', 'schedule',
-    'suppliers', 'analytics', 'media', 'invoices', 'currency', 'language', 'consent'
+    'suppliers', 'analytics', 'media', 'invoices', 'currency', 'language'
   ].map(svc),
   paths: {
     // ------------------------------------------------------------ gateway
@@ -246,27 +246,6 @@ module.exports = {
     // ----------------------------------------------------------- invoices
     '/invoices': { post: { tags: ['invoices'], summary: 'Create an invoice', requestBody: jsonBody({ orderId: str('o-1') }, ['orderId']), responses: { 201: ok('Invoice created') } } },
     '/invoices/{id}': { get: { tags: ['invoices'], summary: 'Get an invoice', parameters: [pathP('id')], responses: { 200: ok('Invoice'), 404: err('Not found') } } },
-    // ------------------------------------------------------------ consent
-    '/consent/{userId}': {
-      get: {
-        tags: ['consent'], summary: 'Current status of one consent type for a user',
-        parameters: [pathP('userId'), { name: 'type', in: 'query', schema: { type: 'string', default: 'location' }, description: 'Consent type; defaults to "location"' }],
-        responses: { 200: ok('{ userId, consentType, granted, respondedAt } — granted is null if never asked') }
-      },
-      post: {
-        tags: ['consent'], summary: 'Record or update a consent decision (e.g. location access)',
-        parameters: [pathP('userId')],
-        requestBody: jsonBody({
-          consentType: str('location'),
-          granted: { type: 'boolean', example: true },
-          source: str('app')
-        }, ['granted']),
-        responses: { 200: ok('Consent recorded'), 400: err('Missing/invalid granted or unknown consentType') }
-      }
-    },
-    '/consent/{userId}/all': {
-      get: { tags: ['consent'], summary: 'Every consent type this user has been asked about', parameters: [pathP('userId')], responses: { 200: ok('Array of consent records') } }
-    },
     // ----------------------------------------------------------- currency
     '/currency': { get: { tags: ['currency'], summary: 'List all supported currencies with symbols and EUR rates', responses: { 200: ok('47+ currencies incl. INR, AED, CNY, GBP, JPY, USD') } } },
     '/currency/rates': { get: { tags: ['currency'], summary: 'Rate table rebased onto any currency', parameters: [{ name: 'base', in: 'query', schema: { type: 'string', example: 'INR' } }], responses: { 200: ok('Rates keyed by currency code'), 400: err('Unknown base currency') } } },

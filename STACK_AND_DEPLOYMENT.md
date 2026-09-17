@@ -39,7 +39,7 @@ how a change gets from a laptop to production._
   adminer ──▶ postgres (dev-only DB admin UI)
 ```
 
-**Totals:** 1 API gateway + 26 backend microservices + 1 web frontend + Postgres + Redis +
+**Totals:** 1 API gateway + 25 backend microservices + 1 web frontend + Postgres + Redis +
 2 dev-only tools (Mailpit, Adminer) + 1 native Android client.
 
 ---
@@ -54,7 +54,7 @@ how a change gets from a laptop to production._
 | Commerce | `cart-service`, `order-service`, `payment-service`, `promotion-service`, `loyalty-service`, `invoice-service` |
 | Fulfilment | `delivery-service`, `baking-schedule-service`, `supplier-service`, `recipe-service` |
 | Engagement | `review-service`, `notification-service`, `notification-worker` |
-| Platform | `media-service`, `analytics-service`, `currency-service`, `language-service`, `consent-service` |
+| Platform | `media-service`, `analytics-service`, `currency-service`, `language-service` |
 | Data | `postgres`, `redis` |
 | Dev tooling | `adminer` (DB UI), `mailpit` (SMTP sink) |
 | Client | `frontend` (web storefront, nginx) |
@@ -117,7 +117,7 @@ docker compose up --build -d
 ```
 k8s/
 ├── base/
-│   ├── services/       # 26 Deployment+Service manifests, one per microservice
+│   ├── services/       # 25 Deployment+Service manifests, one per microservice
 │   ├── data/           # Postgres + Redis StatefulSets/Deployments
 │   └── ingress/        # single Ingress: /api → api-gateway, / → frontend
 └── overlays/
@@ -160,7 +160,7 @@ environment points at the exact same ingress host the Application serves.
 .github/workflows/
 ├── _service-pipeline.yml     # reusable: build image → push GHCR → bump tag in overlay
 ├── api-gateway.yml            # thin caller, path-filtered to services/api-gateway/**
-├── auth-service.yml            # ...one per service, 26 total
+├── auth-service.yml            # ...one per service, 25 total
 └── ... (25 service callers)
 ```
 
@@ -229,7 +229,7 @@ Shipping an order-service fix and a matching mobile update together:
 | Gateway routing table | `services/api-gateway/server.js` (`UPSTREAMS`), `openapi.js` |
 | K8s manifests | `k8s/base/`, `k8s/overlays/{dev,uat,production}/` |
 | Argo CD apps | `argocd/{dev,uat,production}-app.yaml` |
-| Backend CI | `.github/workflows/_service-pipeline.yml` + 26 per-service callers |
+| Backend CI | `.github/workflows/_service-pipeline.yml` + 25 per-service callers |
 | Mobile app | `android-app/` |
 | Mobile CI | `.github/workflows/_mobile-pipeline.yml`, `android-app.yml` |
 | Full deployment writeup | `docs/DEPLOYMENT.md` |
