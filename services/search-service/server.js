@@ -71,23 +71,38 @@ app.get('/health', (req, res) => res.json({ status: 'ok', service: SERVICE_NAME 
 app.get('/ready', (req, res) => res.json({ ready: true, service: SERVICE_NAME }));
 
 // --- Full-text search across the catalog ---
+// Mirrors product-catalog-service's own seed data (see that service's
+// server.js) so a hit here is a real, fully-shaped Product the client can
+// render/add-to-cart exactly like any /products result — plus a `terms`
+// field of extra searchable synonyms that isn't returned to the client.
 const index = [
-  { id: 'p-1', name: 'Levain Country Loaf', terms: 'sourdough bread levain country loaf' },
-  { id: 'p-2', name: 'Seeded Rye', terms: 'rye bread seeded danish' },
-  { id: 'p-3', name: 'Butter Croissant', terms: 'croissant butter pastry viennoiserie' },
-  { id: 'p-4', name: 'Cardamom Knot', terms: 'cardamom bun knot swedish' },
-  { id: 'p-5', name: 'Pain au Chocolat', terms: 'chocolate pain au chocolat pastry' },
-  { id: 'p-8', name: 'Sour Cherry Galette', terms: 'cherry galette pie tart' },
-  { id: 'p-10', name: 'Baguette Tradition', terms: 'baguette french bread tradition' },
-  { id: 'p-12', name: 'Espresso Walnut Babka', terms: 'babka espresso walnut brioche' }
+  { id: 'p-1', name: 'Levain Country Loaf', category: 'bread', price: 8.50, description: '48-hour fermented sourdough, dark bake.', terms: 'sourdough bread levain country loaf' },
+  { id: 'p-2', name: 'Seeded Rye', category: 'bread', price: 7.00, description: 'Dense Danish-style rye with sunflower and flax.', terms: 'rye bread seeded danish' },
+  { id: 'p-3', name: 'Butter Croissant', category: 'viennoiserie', price: 4.25, description: '27 layers of cultured butter.', terms: 'croissant butter pastry viennoiserie' },
+  { id: 'p-4', name: 'Cardamom Knot', category: 'viennoiserie', price: 4.75, description: 'Swedish-style bun, freshly ground cardamom.', terms: 'cardamom bun knot swedish' },
+  { id: 'p-5', name: 'Pain au Chocolat', category: 'viennoiserie', price: 4.50, description: 'Two batons of 70% chocolate.', terms: 'chocolate pain au chocolat pastry' },
+  { id: 'p-6', name: 'Morning Bun', category: 'viennoiserie', price: 4.50, description: 'Croissant dough, orange zest, muscovado.', terms: 'morning bun orange croissant' },
+  { id: 'p-7', name: 'Pistachio Financier', category: 'patisserie', price: 3.75, description: 'Brown-butter almond cake, Sicilian pistachio.', terms: 'pistachio financier cake almond' },
+  { id: 'p-8', name: 'Sour Cherry Galette', category: 'patisserie', price: 6.25, description: 'Rye crust, whole sour cherries.', terms: 'cherry galette pie tart' },
+  { id: 'p-9', name: 'Canele', category: 'patisserie', price: 3.50, description: 'Rum and vanilla, caramelised copper-mould crust.', terms: 'canele rum vanilla' },
+  { id: 'p-10', name: 'Baguette Tradition', category: 'bread', price: 3.90, description: 'Slow-fermented, thin crackling crust.', terms: 'baguette french bread tradition' },
+  { id: 'p-11', name: 'Focaccia al Rosmarino', category: 'bread', price: 5.50, description: 'Olive oil crumb, flaky salt, rosemary.', terms: 'focaccia rosemary olive bread' },
+  { id: 'p-12', name: 'Espresso Walnut Babka', category: 'patisserie', price: 9.00, description: 'Twisted brioche, espresso frangipane.', terms: 'babka espresso walnut brioche' }
 ];
 
+// Returns a bare JSON array of Products — same shape as GET /products —
+// so the Android client's `Response<List<Product>>` can parse it directly.
+// This used to return { query, hits } with hit objects missing
+// category/price/description, which the client can't deserialize as
+// Product at all; every search request failed client-side as a result.
 app.get('/search', (req, res) => {
   const q = String(req.query.q || '').toLowerCase().trim();
   if (!q) return res.status(400).json({ error: 'query parameter q is required' });
-  const hits = index.filter(d => d.terms.includes(q) || d.name.toLowerCase().includes(q));
+  const hits = index
+    .filter(d => d.terms.includes(q) || d.name.toLowerCase().includes(q))
+    .map(({ id, name, category, price, description }) => ({ id, name, category, price, description }));
   req.log.info({ event: 'search_executed', query: q, hits: hits.length }, 'search served');
-  res.json({ query: q, hits });
+  res.json(hits);
 });
 
 // --- 404 + error handling ----------------------------------------------

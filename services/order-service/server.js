@@ -50,8 +50,10 @@ const store = pool ? {
       [o.userId, JSON.stringify(o.items), o.pickupTime || null, o.status, o.paymentMethod, o.paymentStatus, o.amount, o.currency]);
     return rows[0];
   },
-  async list() {
-    const { rows } = await pool.query(`SELECT ${ORDER_ROW} FROM orders ORDER BY created_at DESC LIMIT 500`);
+  async list(userId) {
+    const { rows } = userId
+      ? await pool.query(`SELECT ${ORDER_ROW} FROM orders WHERE user_id = $1 ORDER BY created_at DESC LIMIT 500`, [userId])
+      : await pool.query(`SELECT ${ORDER_ROW} FROM orders ORDER BY created_at DESC LIMIT 500`);
     return rows;
   },
   async get(id) {
@@ -86,7 +88,10 @@ const store = pool ? {
     memory.orders.set(id, order);
     return order;
   },
-  async list() { return [...memory.orders.values()]; },
+  async list(userId) {
+    const all = [...memory.orders.values()];
+    return userId ? all.filter((o) => o.userId === userId) : all;
+  },
   async get(id) { return memory.orders.get(id) || null; },
   async confirmPaid(id, paymentId) {
     const order = memory.orders.get(id);
@@ -286,8 +291,16 @@ app.post('/orders/:id/confirm', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+// Scoped to the caller's own orders. userId is required — without it this
+// endpoint used to hand back every order in the system to whoever asked,
+// which is how a second account on the same device could see the first
+// account's order history.
 app.get('/orders', async (req, res, next) => {
-  try { res.json(await store.list()); } catch (err) { next(err); }
+  try {
+    const { userId } = req.query;
+    if (!userId) return res.status(400).json({ error: 'userId query parameter is required' });
+    res.json(await store.list(userId));
+  } catch (err) { next(err); }
 });
 
 app.get('/orders/:id', async (req, res, next) => {

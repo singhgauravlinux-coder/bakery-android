@@ -94,6 +94,14 @@ data class ConsentRecord(
     val respondedAt: String?
 )
 
+// --- loyalty-service: GET /loyalty/:userId -------------------------------
+
+data class LoyaltyAccount(
+    val userId: String,
+    val points: Int,
+    val tier: String
+)
+
 // --- generic gateway error envelope --------------------------------------
 
 data class ApiError(val error: String?, val reason: String? = null, val traceId: String? = null)

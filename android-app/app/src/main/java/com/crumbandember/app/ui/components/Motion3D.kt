@@ -55,7 +55,11 @@ data class HeroSlide(
     val subtitle: String,
     val ctaLabel: String,
     val accentColors: List<Color>,
-    val emoji: String
+    val emoji: String,
+    // Backend product-catalog category this slide's CTA should land on
+    // (see product-catalog-service's seed data: bread / viennoiserie /
+    // patisserie). Used by CatalogScreen's onCtaClick.
+    val targetCategory: String
 )
 
 /**

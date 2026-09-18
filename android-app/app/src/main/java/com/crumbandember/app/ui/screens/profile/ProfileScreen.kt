@@ -20,8 +20,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.crumbandember.app.data.model.ConsentRecord
+import com.crumbandember.app.data.model.LoyaltyAccount
 import com.crumbandember.app.data.repository.AuthRepository
 import com.crumbandember.app.data.repository.ConsentRepository
+import com.crumbandember.app.data.repository.LoyaltyRepository
 import com.crumbandember.app.ui.components.BakeryBottomBar
 import com.crumbandember.app.ui.components.BakeryDetailTopBar
 import com.crumbandember.app.ui.components.BakeryTab
@@ -32,6 +34,7 @@ import kotlinx.coroutines.launch
 fun ProfileScreen(
     authRepository: AuthRepository,
     consentRepository: ConsentRepository,
+    loyaltyRepository: LoyaltyRepository,
     onBack: () -> Unit,
     onViewOrders: () -> Unit,
     onManageLocationAccess: () -> Unit,
@@ -44,9 +47,14 @@ fun ProfileScreen(
     val userName by authRepository.userName.collectAsState(initial = null)
 
     var consentState by remember { mutableStateOf<Resource<ConsentRecord>>(Resource.Loading) }
+    // Previously this card was static markup ("350 Flour Points" / "₹50
+    // discount unlocked") with no API call behind it at all, so it never
+    // reflected what a user had actually earned. Wired to loyalty-service.
+    var loyaltyState by remember { mutableStateOf<Resource<LoyaltyAccount>>(Resource.Loading) }
     LaunchedEffect(Unit) {
         val userId = authRepository.currentUserId() ?: ""
         consentState = consentRepository.getLocationConsent(userId)
+        loyaltyState = loyaltyRepository.getAccount(userId)
     }
 
     val locationStatusText = when (val s = consentState) {
@@ -117,18 +125,35 @@ fun ProfileScreen(
                             color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)
                         )
                         Spacer(Modifier.height(4.dp))
-                        Text(
-                            "350 Flour Points",
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onPrimary
-                        )
-                        Spacer(Modifier.height(2.dp))
-                        Text(
-                            "₹50 discount unlocked on your next order",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f)
-                        )
+                        when (val ls = loyaltyState) {
+                            is Resource.Success -> {
+                                Text(
+                                    "${ls.data.points} Flour Points",
+                                    style = MaterialTheme.typography.titleLarge,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onPrimary
+                                )
+                                Spacer(Modifier.height(2.dp))
+                                Text(
+                                    if (ls.data.tier == "golden-crust")
+                                        "₹50 discount unlocked on your next order"
+                                    else
+                                        "Earn ${200 - ls.data.points} more points to unlock a ₹50 discount",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.9f)
+                                )
+                            }
+                            is Resource.Error -> Text(
+                                "Points unavailable right now",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onPrimary
+                            )
+                            else -> Text(
+                                "Loading…",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onPrimary
+                            )
+                        }
                     }
                     Text("🌾", fontSize = 36.sp)
                 }
