@@ -212,7 +212,9 @@ fun BakeryNavGraph(app: BakeryApplication) {
         }
 
         composable(Screen.Orders.route) {
+            val userId = remember { runBlocking { app.authRepository.currentUserId() } } ?: ""
             OrderHistoryScreen(
+                userId = userId,
                 orderRepository = app.orderRepository,
                 onBack = { navController.popBackStack() },
                 onOrderClick = { orderId -> navController.navigate(Screen.OrderConfirmation.createRoute(orderId)) },
@@ -227,6 +229,7 @@ fun BakeryNavGraph(app: BakeryApplication) {
             ProfileScreen(
                 authRepository = app.authRepository,
                 consentRepository = app.consentRepository,
+                loyaltyRepository = app.loyaltyRepository,
                 onBack = { navController.popBackStack() },
                 onViewOrders = { navController.navigate(Screen.Orders.route) },
                 onManageLocationAccess = { navController.navigate(Screen.LocationConsent.route) },

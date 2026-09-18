@@ -23,6 +23,7 @@ import com.crumbandember.app.util.ViewModelFactory
 
 @Composable
 fun OrderHistoryScreen(
+    userId: String,
     orderRepository: OrderRepository,
     onBack: () -> Unit,
     onOrderClick: (String) -> Unit,
@@ -37,7 +38,10 @@ fun OrderHistoryScreen(
     var orderPendingCancel by remember { mutableStateOf<Order?>(null) }
     val snackbarHostState = remember { SnackbarHostState() }
 
-    LaunchedEffect(Unit) { viewModel.loadOrders() }
+    // Scoped to this signed-in user — previously this called the API with
+    // no userId at all, so every account on the device saw the exact same
+    // (unscoped) order list.
+    LaunchedEffect(userId) { viewModel.loadOrders(userId) }
 
     LaunchedEffect(cancelError) {
         cancelError?.let {
@@ -53,7 +57,7 @@ fun OrderHistoryScreen(
             text = { Text("Order #${orderPendingCancel!!.id.take(8)} will be cancelled. This can't be undone.") },
             confirmButton = {
                 TextButton(onClick = {
-                    viewModel.cancelOrder(orderPendingCancel!!.id)
+                    viewModel.cancelOrder(orderPendingCancel!!.id, userId)
                     orderPendingCancel = null
                 }) { Text("Cancel Order", color = MaterialTheme.colorScheme.error) }
             },
@@ -84,7 +88,7 @@ fun OrderHistoryScreen(
     ) { padding ->
         when (val s = state) {
             is Resource.Loading, Resource.Idle -> LoadingSkeleton(modifier = Modifier.padding(padding).padding(top = 16.dp))
-            is Resource.Error -> UnavailableScreen(s.kind, "your order history", onRetry = viewModel::loadOrders)
+            is Resource.Error -> UnavailableScreen(s.kind, "your order history", onRetry = { viewModel.loadOrders(userId) })
             is Resource.Success -> {
                 if (s.data.isEmpty()) {
                     Box(Modifier.padding(padding).fillMaxSize(), contentAlignment = Alignment.Center) {

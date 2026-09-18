@@ -26,6 +26,6 @@ class OrderRepository(private val api: ApiService) {
     suspend fun getOrder(id: String): Resource<Order> =
         safeApiCall { api.getOrder(id) }
 
-    suspend fun getOrders(): Resource<List<Order>> =
-        safeApiCall { api.getOrders() }
+    suspend fun getOrders(userId: String): Resource<List<Order>> =
+        safeApiCall { api.getOrders(userId) }
 }

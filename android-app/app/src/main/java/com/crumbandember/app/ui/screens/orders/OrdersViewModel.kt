@@ -22,10 +22,10 @@ class OrdersViewModel(private val repository: OrderRepository) : ViewModel() {
     private val _cancelError = MutableStateFlow<String?>(null)
     val cancelError: StateFlow<String?> = _cancelError
 
-    fun loadOrders() {
+    fun loadOrders(userId: String) {
         viewModelScope.launch {
             _orders.value = Resource.Loading
-            _orders.value = repository.getOrders()
+            _orders.value = repository.getOrders(userId)
         }
     }
 
@@ -37,12 +37,12 @@ class OrdersViewModel(private val repository: OrderRepository) : ViewModel() {
     }
 
     /** Only offered in the UI while an order is still pending_payment — see OrderHistoryScreen. */
-    fun cancelOrder(orderId: String) {
+    fun cancelOrder(orderId: String, userId: String) {
         viewModelScope.launch {
             when (val result = repository.cancelOrder(orderId)) {
                 is Resource.Success -> {
                     _cancelError.value = null
-                    loadOrders()
+                    loadOrders(userId)
                 }
                 is Resource.Error -> _cancelError.value = result.message
                 else -> Unit

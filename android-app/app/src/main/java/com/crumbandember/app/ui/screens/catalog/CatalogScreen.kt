@@ -39,34 +39,38 @@ private val HERO_SLIDES = listOf(
         subtitle = "Golden, flaky croissants made with the finest ingredients.",
         ctaLabel = "Explore",
         accentColors = listOf(Color(0xFF2C160A), Color(0xFF8C5A2E)),
-        emoji = "🥐"
+        emoji = "🥐",
+        targetCategory = "viennoiserie"
     ),
     HeroSlide(
         title = "Rich, Decadent\nChocolate Cake",
         subtitle = "Indulge in layers of pure chocolate bliss, freshly baked for your special moments.",
         ctaLabel = "Order Now",
         accentColors = listOf(Color(0xFF241207), Color(0xFFD9752B)),
-        emoji = "🍫"
+        emoji = "🍫",
+        targetCategory = "patisserie"
     ),
     HeroSlide(
         title = "Sweet Moments\nCupcakes",
         subtitle = "Delightful cupcakes for every celebration and little joy.",
         ctaLabel = "Shop Now",
         accentColors = listOf(Color(0xFF702040), Color(0xFFD9752B)),
-        emoji = "🧁"
+        emoji = "🧁",
+        targetCategory = "patisserie"
     )
 )
 
 private data class CategoryItem(val id: String?, val label: String, val icon: String)
 
+// Ids must match product-catalog-service's real categories (bread /
+// viennoiserie / patisserie) — the old list ("cakes", "cookies",
+// "cupcakes", "desserts") didn't match anything in the catalog, so tapping
+// those chips always rendered "No bakery items found".
 private val CURATED_CATEGORIES = listOf(
     CategoryItem(null, "All", "⊞"),
-    CategoryItem("cakes", "Cakes", "🍰"),
-    CategoryItem("pastries", "Pastries", "🥐"),
     CategoryItem("bread", "Bread", "🍞"),
-    CategoryItem("cookies", "Cookies", "🍪"),
-    CategoryItem("cupcakes", "Cupcakes", "🧁"),
-    CategoryItem("desserts", "Desserts", "🍮")
+    CategoryItem("viennoiserie", "Viennoiserie", "🥐"),
+    CategoryItem("patisserie", "Patisserie", "🍮")
 )
 
 @Composable
@@ -271,9 +275,23 @@ private fun CatalogContent(
             Hero3DCarousel(
                 slides = HERO_SLIDES,
                 onCtaClick = { slide ->
-                    // CTA routes into the corresponding category or product
-                    val matched = products.firstOrNull { it.category?.contains("cake", ignoreCase = true) == true }
-                    if (matched != null) onProductClick(matched.id)
+                    // Route to a product in the slide's target category. The old
+                    // check only ever looked for a "cake" category — which no
+                    // product in the catalog has — so every CTA silently did
+                    // nothing. We now fall back through category match, then a
+                    // loose keyword match against the slide's own copy, then
+                    // simply the first available product, so the button always
+                    // takes the user somewhere.
+                    val byCategory = products.firstOrNull {
+                        it.category?.equals(slide.targetCategory, ignoreCase = true) == true
+                    }
+                    val keywords = (slide.title + " " + slide.subtitle).lowercase()
+                    val byKeyword = products.firstOrNull { p ->
+                        keywords.split(Regex("\\W+")).filter { it.length > 3 }
+                            .any { word -> p.name.contains(word, ignoreCase = true) || p.description?.contains(word, ignoreCase = true) == true }
+                    }
+                    val target = byCategory ?: byKeyword ?: products.firstOrNull()
+                    target?.let { onProductClick(it.id) }
                 },
                 modifier = Modifier.fillMaxWidth()
             )

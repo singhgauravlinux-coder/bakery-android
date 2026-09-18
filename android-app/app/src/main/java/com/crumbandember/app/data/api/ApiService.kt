@@ -74,8 +74,11 @@ interface ApiService {
     @GET("orders/{id}")
     suspend fun getOrder(@Path("id") id: String): Response<Order>
 
+    // userId is required server-side — without it order-service used to
+    // return every order in the system, which is how a second account on
+    // the same device could see the first account's orders.
     @GET("orders")
-    suspend fun getOrders(): Response<List<Order>>
+    suspend fun getOrders(@Query("userId") userId: String): Response<List<Order>>
 
     // --- payment-service (mock provider — see validateCard/validateUpi) ----
     @POST("payments")
@@ -100,4 +103,8 @@ interface ApiService {
         @Path("userId") userId: String,
         @Body body: ConsentRequest
     ): Response<ConsentRecord>
+
+    // --- loyalty-service -------------------------------------------------------
+    @GET("loyalty/{userId}")
+    suspend fun getLoyaltyAccount(@Path("userId") userId: String): Response<LoyaltyAccount>
 }

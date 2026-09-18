@@ -6,6 +6,7 @@ import com.crumbandember.app.data.local.TokenManager
 import com.crumbandember.app.data.repository.AuthRepository
 import com.crumbandember.app.data.repository.CartRepository
 import com.crumbandember.app.data.repository.ConsentRepository
+import com.crumbandember.app.data.repository.LoyaltyRepository
 import com.crumbandember.app.data.repository.OrderRepository
 import com.crumbandember.app.data.repository.PaymentRepository
 import com.crumbandember.app.data.repository.ProductRepository
@@ -34,6 +35,8 @@ class BakeryApplication : Application() {
         private set
     lateinit var paymentRepository: PaymentRepository
         private set
+    lateinit var loyaltyRepository: LoyaltyRepository
+        private set
 
     private val appScope = CoroutineScope(SupervisorJob())
 
@@ -56,5 +59,6 @@ class BakeryApplication : Application() {
         orderRepository = OrderRepository(api)
         consentRepository = ConsentRepository(api)
         paymentRepository = PaymentRepository(api)
+        loyaltyRepository = LoyaltyRepository(api)
     }
 }
