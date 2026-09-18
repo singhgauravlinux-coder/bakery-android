@@ -11,7 +11,7 @@ const SERVICE_NAME = process.env.SERVICE_NAME || 'consent-service';
 const PORT = Number(process.env.PORT || 3000);
 const DATABASE_URL = process.env.DATABASE_URL || '';
 
-// The set of things a customer can be asked to consent to. Kept as a
+// The set of things a customer can be asked to consent to. Kept as a test
 // closed list (rather than accepting any string) so a typo in a client
 // ("locaton") silently creates a new, never-checked consent type instead
 // of failing loudly. Add a new value here when the product adds a new
